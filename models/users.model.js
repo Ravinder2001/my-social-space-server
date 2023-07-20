@@ -1,7 +1,7 @@
 const client = require("../config/db");
 
 module.exports = {
-  Register_User: ({ id, name, email, password }) => {
+  RegisterUser: ({ id, name, email, password }) => {
     return new Promise((resolve, reject) => {
       try {
         const response = client.query(
@@ -14,10 +14,10 @@ module.exports = {
       }
     });
   },
-  Login_User: () => {
+  LoginUser: ({email}) => {
     return new Promise((resolve, reject) => {
       try {
-        const response = client.query(`SELECT * FROM users`);
+        const response = client.query(`SELECT id,name,password FROM users WHERE email=$1`,[email]);
         resolve(response);
       } catch (err) {
         reject(err);

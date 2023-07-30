@@ -5,10 +5,11 @@ const PORT = 5000;
 const client = require("./config/db");
 
 const Login_Routes = require("./routes/users.routes");
+const config = require("./utils/config");
 
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: [config.domain],
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })

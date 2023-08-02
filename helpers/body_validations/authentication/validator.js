@@ -2,7 +2,7 @@ const { Bad } = require("../../../utils/constant");
 const { validate_register_user_token,validate_register_user, validate_login_user, validate_login_user_token } = require("./validation");
 
 module.exports = {
-  Body_Validations: {
+  User_Validations: {
     RegisterUserToken: (req, res, next) => {
       const { error } = validate_register_user_token(req.body);
       if (error)

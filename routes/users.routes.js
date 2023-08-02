@@ -9,18 +9,18 @@ const { Verify_Id_Token } = require("../middlewares/middlewares");
 const {
   UserValidations,
 } = require("../helpers/db_validations/users.validations");
-const { Body_Validations } = require("../helpers/body_validations/authentication/validator");
+const { User_Validations } = require("../helpers/body_validations/authentication/validator");
 const router = express.Router();
 
 router.post(
   "/registerWithEmailAndPassword",
-  Body_Validations.RegisterUser,
+  User_Validations.RegisterUser,
   UserValidations,
   Register_User_With_EmailAndPassword
 );
 router.post(
   "/registerWithToken",
-  Body_Validations.RegisterUserToken,
+  User_Validations.RegisterUserToken,
   Verify_Id_Token,
   UserValidations,
   Register_User_With_Token
@@ -28,12 +28,12 @@ router.post(
 
 router.post(
   "/loginWithEmailAndPassword",
-  Body_Validations.LoginUser,
+  User_Validations.LoginUser,
   Login_With_EmailAndPassword
 );
 router.post(
   "/loginWithToken",
-  Body_Validations.LoginUserToken,
+  User_Validations.LoginUserToken,
   Verify_Id_Token,
   Login_With_Token
 );

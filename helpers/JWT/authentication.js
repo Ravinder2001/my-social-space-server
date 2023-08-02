@@ -1,19 +1,29 @@
+const { FindUserById } = require("../../models/users.model");
+const { jwt_secret_key } = require("../../utils/config");
 const { Unauthorized } = require("../../utils/constant");
 const { UnauthorizedMsg } = require("../../utils/message");
+const jwt = require("jsonwebtoken");
 
 const authentication = async (req, res, next) => {
   try {
     let token = req.headers.authorization;
     if (token) {
-        token = token.split(" ")[1];
-        const decoded = jwt.verify(token)
-        console.log("🚀  file: authentication.js:10  decoded:", decoded)
+      token = token.split(" ")[1];
+      const decoded = jwt.verify(token, jwt_secret_key);
+      const response = await FindUserById({ id: decoded.id });
+      if (response.rows.length) {
+        return next();
+      } else {
+        return res
+          .status(Unauthorized)
+          .json({ message: UnauthorizedMsg, status: Unauthorized });
+      }
     }
-    res
+    return res
       .status(Unauthorized)
       .json({ message: UnauthorizedMsg, status: Unauthorized });
   } catch (err) {
-    res
+    return res
       .status(Unauthorized)
       .json({ message: err.message, status: Unauthorized });
   }

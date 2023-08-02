@@ -9,12 +9,12 @@ const register_user_token = Joi.object({
   password: Joi.string().min(8).max(20).required(),
 });
 const register_user = Joi.object({
-  name: Joi.string().max(255).required(),
-  email: Joi.string().email().required(),
+  name: Joi.string().max(100).required(),
+  email: Joi.string().email().max(255).required(),
   password: Joi.string().min(8).max(20).required(),
 });
 const login_user = Joi.object({
-  email: Joi.string().email().required(),
+  email: Joi.string().email().max(255).required(),
   password: Joi.string().min(8).max(20).required(),
   rememberMe: Joi.boolean(),
 });

@@ -24,4 +24,14 @@ module.exports = {
       }
     });
   },
+  FindUserById: ({id}) => {
+    return new Promise((resolve, reject) => {
+      try {
+        const response = client.query(`SELECT id FROM users WHERE id=$1`,[id]);
+        resolve(response);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  },
 };

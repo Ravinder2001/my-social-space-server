@@ -1,6 +1,6 @@
-const Success = 200;
-const Bad = 400;
-const Unauthorized =401
-
-
-module.exports = { Success, Bad,Unauthorized };
+module.exports = {
+  Success: 200,
+  Bad: 400,
+  Unauthorized: 401,
+  File_Extension: "file",
+};

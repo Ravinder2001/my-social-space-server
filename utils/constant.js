@@ -3,4 +3,5 @@ module.exports = {
   Bad: 400,
   Unauthorized: 401,
   File_Extension: "file",
+  Image_Exp_Duration:86400
 };

@@ -12,6 +12,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.382.0",
     "@aws-sdk/s3-request-presigner": "^3.383.0",
+    "axios": "^1.4.0",
     "bcrypt": "^5.1.0",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
@@ -26,6 +27,7 @@
     "nanoid": "^4.0.2",
     "nodemon": "^3.0.1",
     "pg": "^8.11.1",
+    "sharp": "^0.32.4",
     "uuid": "^9.0.0"
   }
 }

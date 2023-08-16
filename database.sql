@@ -3,6 +3,7 @@ CREATE TABLE users(
     name VARCHAR(100) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     status BOOLEAN NOT NULL DEFAULT true
 );
 
@@ -26,6 +27,7 @@ CREATE TABLE comments(
     post_id VARCHAR(255) NOT NULL,
     user_id VARCHAR(255) NOT NULL,
     content VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
@@ -35,5 +37,13 @@ CREATE TABLE likes(
     post_id VARCHAR(255) NOT NULL,
     user_id VARCHAR(255) NOT NULL,
     FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE profile_pictures(
+    id SERIAL primary key,
+    user_id VARCHAR(255) NOT NULL,
+    image_url VARCHAR(500) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );

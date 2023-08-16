@@ -10,8 +10,10 @@ const authentication = async (req, res, next) => {
     if (token) {
       token = token.split(" ")[1];
       const decoded = jwt.verify(token, jwt_secret_key);
+
       const response = await FindUserById({ id: decoded.id });
       if (response.rows.length) {
+        req.customData = decoded.id;
         return next();
       } else {
         return res

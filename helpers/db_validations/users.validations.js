@@ -1,6 +1,11 @@
+const { FindPostById } = require("../../models/post.modal");
 const { LoginUser, FindUserById } = require("../../models/users.model");
-const { Bad } = require("../../utils/constant");
-const { UserExists, UserIdNotFound } = require("../../utils/message");
+const { Bad, Unauthorized } = require("../../utils/constant");
+const {
+  UserExists,
+  UserIdNotFound,
+  TokenConflict,
+} = require("../../utils/message");
 
 module.exports = {
   UserValidations: async (req, res, next) => {
@@ -23,6 +28,25 @@ module.exports = {
         return next();
       }
       return res.status(Bad).json({ message: UserIdNotFound, status: Bad });
+    } catch (err) {
+      return res.status(Bad).json({ message: err.message, status: Bad });
+    }
+  },
+  TokenRequestValidation: async (req, res, next) => {
+    try {
+      if (req.params.user_id) {
+        if (req.customData == req.params.user_id) {
+          return next();
+        }
+      }
+      if (req.body.user_id) {
+        if (req.customData == req.body.user_id) {
+          return next();
+        }
+      }
+      return res
+        .status(Unauthorized)
+        .json({ message: TokenConflict, status: Unauthorized });
     } catch (err) {
       return res.status(Bad).json({ message: err.message, status: Bad });
     }

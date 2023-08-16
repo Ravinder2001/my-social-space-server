@@ -20,7 +20,27 @@ const post_file = Joi.array()
   .required();
 const post_body = Joi.object({
   caption: Joi.string().min(0).max(255).required(),
+  image: Joi.array().items({
+    caption: Joi.string().max(255),
+    fieldname: Joi.string().required(),
+    originalname: Joi.string().required(),
+    encoding: Joi.string().required(),
+    mimetype: Joi.string().required(),
+    buffer: Joi.binary().required(),
+    size: Joi.number()
+      .max(1024 * 1024)
+      .required(),
+  }),
+});
+const comment_body = Joi.object({
+  content: Joi.string().max(255).required(),
+  user_id: Joi.string().max(255).required(),
+});
+const like_body = Joi.object({
+  user_id: Joi.string().max(255).required(),
 });
 
 exports.validate_post_file = validator(post_file);
 exports.validate_post_body = validator(post_body);
+exports.validate_comment_body = validator(comment_body);
+exports.validate_like_body = validator(like_body);

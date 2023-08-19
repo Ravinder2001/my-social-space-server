@@ -4,7 +4,6 @@ const { default: axios } = require("axios");
 
 const getImageUrls = async (data) => {
   const imagePromises = data.map(async (item) => {
-    console.log("🚀  file: Reusable.function.js:27  data:", item);
     const profile_url = await Image_Link(item.profile_picture);
     item.profile_picture = profile_url;
 

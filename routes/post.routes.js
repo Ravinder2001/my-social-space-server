@@ -18,7 +18,6 @@ const multer = require("multer");
 const { File_Extension } = require("../utils/constant");
 const {
   UserIdValidation,
-  TokenRequestValidation,
 } = require("../helpers/db_validations/users.validations");
 const {
   PostIdValidation,
@@ -29,9 +28,8 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 router.post(
-  "/add/:user_id",
+  "/add",
   authentication,
-  TokenRequestValidation,
   UserIdValidation,
   upload.array(File_Extension),
   Post_Validations.PostBody,
@@ -39,9 +37,8 @@ router.post(
   Add_Post
 );
 router.get(
-  "/all/:user_id",
+  "/all",
   authentication,
-  TokenRequestValidation,
   UserIdValidation,
   Get_Posts_By_UserID
 );
@@ -50,34 +47,23 @@ router.post(
   "/comment/add/:post_id",
   authentication,
   Post_Validations.CommentBody,
-  TokenRequestValidation,
   PostIdValidation,
   Add_Comment
 );
 router.post(
   "/like/add/:post_id",
   authentication,
-  Post_Validations.LikeBody,
-  TokenRequestValidation,
   PostIdValidation,
   Add_Like
 );
 router.post(
   "/like/remove/:post_id",
   authentication,
-  Post_Validations.LikeBody,
-  TokenRequestValidation,
   PostIdValidation,
   Remove_Like
 );
 router.get("/comment/get/:post_id", authentication, Get_Posts_Comments);
 router.get("/like/get/:post_id", authentication, Get_Posts_Likes);
-router.get(
-  "/single/:user_id/:post_id",
-  authentication,
-  TokenRequestValidation,
-  UserIdValidation,
-  Get_Posts_By_PostID
-);
+router.get("/single/:post_id", authentication, Get_Posts_By_PostID);
 
 module.exports = router;

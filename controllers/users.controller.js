@@ -102,7 +102,7 @@ module.exports = {
   },
   Add_Profile_Picture: async (req, res) => {
     try {
-      const user = req.params.user_id;
+      const user = req.customData;
       const image_name = req.file.originalname.split(".")[1];
       req.file.originalname = user + "." + image_name;
       const Key = `ProfilePictures/${user}/${req.file.originalname}`;
@@ -127,10 +127,10 @@ module.exports = {
   },
   Get_Profile_Picture: async (req, res) => {
     try {
-      const timestamp = await FindUserById({ id: req.params.user_id });
+      const timestamp = await FindUserById({ id: req.customData });
 
       const image_res = await GetProfilePicture({
-        user_id: req.params.user_id,
+        user_id: req.customData,
       });
       if (image_res.rows.length) {
         const image = await Image_Link(image_res.rows[0].image_url);

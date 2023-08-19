@@ -24,10 +24,9 @@ const {
 module.exports = {
   Add_Post: async (req, res) => {
     try {
-      console.log("main jsg aya", req.body.caption);
 
       const post_id = uuidv4();
-      const user_id = req.params.user_id;
+      const user_id = req.customData;
       const caption = req.body.caption;
       const images = req.files;
       await AddPost({ id: post_id, user_id, caption });
@@ -59,7 +58,7 @@ module.exports = {
   },
   Get_Posts_By_UserID: async (req, res) => {
     try {
-      const postsResponse = await GetPost({ user_id: req.params.user_id });
+      const postsResponse = await GetPost({ user_id: req.customData });
       const posts = postsResponse.rows;
       if (posts.length) {
         const postsWithImages = await getImageUrls(posts);
@@ -137,7 +136,7 @@ module.exports = {
     try {
       const response = await AddComment({
         post_id: req.params.post_id,
-        user_id: req.body.user_id,
+        user_id: req.customData,
         content: req.body.content,
       });
       if (response.rowCount > 0) {
@@ -151,7 +150,7 @@ module.exports = {
     try {
       const response = await AddLike({
         post_id: req.params.post_id,
-        user_id: req.body.user_id,
+        user_id: req.customData,
       });
       if (response.rowCount > 0) {
         res.status(Success).json({ status: Success });
@@ -163,7 +162,7 @@ module.exports = {
   Remove_Like: async (req, res) => {
     try {
       await RemoveLike({
-        user_id: req.body.user_id,
+        user_id: req.customData,
         post_id: req.params.post_id,
       });
 
@@ -192,11 +191,7 @@ module.exports = {
 
           return image;
         });
-        const commentRes = post.rows[0].comments.map(async (comment) => {
-          const url = await Image_Link(comment.image_url);
-          comment.image_url = url;
-        });
-        await Promise.all(postImageRes, commentRes);
+        await Promise.all(postImageRes);
         return res
           .status(Success)
           .json({ data: post.rows[0], status: Success });

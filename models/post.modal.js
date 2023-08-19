@@ -52,7 +52,7 @@ module.exports = {
     return new Promise(function (resolve, reject) {
       try {
         const response = client.query(
-          `SELECT users.name as username,profile_pictures.image_url,comments.content,comments.created_at
+          `SELECT users.name as user_name,profile_pictures.image_url,comments.content,comments.created_at
           FROM comments 
           LEFT JOIN users ON users.id=comments.user_id
           LEFT JOIN profile_pictures ON profile_pictures.user_id=users.id
@@ -69,7 +69,7 @@ module.exports = {
     return new Promise(function (resolve, reject) {
       try {
         const response = client.query(
-          `SELECT users.id,users.name as username,profile_pictures.image_url
+          `SELECT users.id,users.name as user_name,profile_pictures.image_url
           FROM likes 
           LEFT JOIN users ON users.id=likes.user_id
           LEFT JOIN profile_pictures ON profile_pictures.user_id=users.id
@@ -149,16 +149,10 @@ module.exports = {
       try {
         const response = client.query(
           `SELECT users.name AS user_name,profile_pictures.image_url as profile_picture,posts.id AS post_id,posts.caption,posts.created_at,
-          ARRAY_AGG(DISTINCT JSONB_BUILD_OBJECT('image_url',post_images.image_url)) as images,
-          CASE WHEN COUNT(likes.post_id)>0 THEN ARRAY_AGG(DISTINCT JSONB_BUILD_OBJECT('username',users.name,'image_url',profile_pictures.image_url)) ELSE
-          ARRAY[]::JSONB[] END AS likes,
-          CASE WHEN COUNT(comments.post_id)>0 THEN ARRAY_AGG(DISTINCT JSONB_BUILD_OBJECT
-          ('content',comments.content,'created_at',comments.created_at,'username',users.name,'image_url',profile_pictures.image_url)) ELSE ARRAY[]::JSONB[] END AS comments
-          FROM posts 
+          ARRAY_AGG(DISTINCT JSONB_BUILD_OBJECT('image_url',post_images.image_url)) as images
+         FROM posts 
           LEFT JOIN post_images ON post_images.post_id=posts.id 
           LEFT JOIN users ON users.id=posts.user_id
-          LEFT JOIN comments ON comments.post_id=posts.id 
-          LEFT JOIN likes ON likes.post_id=posts.id 
           LEFT JOIN profile_pictures ON profile_pictures.user_id=users.id
           WHERE posts.id=$1 AND users.status=true
           GROUP BY users.name,posts.id,posts.caption,posts.created_at,profile_pictures.image_url`,

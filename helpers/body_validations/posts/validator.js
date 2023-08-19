@@ -47,13 +47,5 @@ module.exports = {
           .json({ message: error.details[0].message, status: Bad });
       return next();
     },
-    LikeBody: (req, res, next) => {
-      const { error } = validate_like_body(req.body);
-      if (error)
-        return res
-          .status(Bad)
-          .json({ message: error.details[0].message, status: Bad });
-      return next();
-    },
   },
 };

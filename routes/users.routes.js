@@ -51,10 +51,11 @@ router.post(
 );
 
 router.post(
-  "/addProfilePicture/:user_id",
+  "/addProfilePicture",
+  authentication,
   upload.single(File_Extension),
   User_Validations.ProfilePicture,
   Add_Profile_Picture
 );
-router.get("/getProfilePicture/:user_id", Get_Profile_Picture);
+router.get("/getProfilePicture", authentication, Get_Profile_Picture);
 module.exports = router;

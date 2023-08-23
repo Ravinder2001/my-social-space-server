@@ -7,6 +7,16 @@ CREATE TABLE users(
     status BOOLEAN NOT NULL DEFAULT true
 );
 
+CREATE TABLE friends(
+      id SERIAL Primary key,
+      user1_id VARCHAR(255) NOT NULL,
+      user2_id VARCHAR(255) NOT NULL,
+      status BOOLEAN NOT NULL DEFAULT true,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY(user1_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY(user2_id) REFERENCES users(id) ON DELETE CASCADE,
+)
+
 CREATE TABLE posts(
     id VARCHAR(255) NOT NULL Primary key,
     user_id VARCHAR(255) NOT NULL,

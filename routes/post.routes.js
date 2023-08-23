@@ -13,6 +13,8 @@ const {
   Get_Posts_Comments,
   Get_Posts_Likes,
   Get_Posts_By_PostID,
+  Remove_Comment,
+  Get_Self_Posts,
 } = require("../controllers/post.controller");
 const multer = require("multer");
 const { File_Extension } = require("../utils/constant");
@@ -30,18 +32,13 @@ const upload = multer({ storage });
 router.post(
   "/add",
   authentication,
-  UserIdValidation,
   upload.array(File_Extension),
   Post_Validations.PostBody,
   Post_Validations.PostFile,
   Add_Post
 );
-router.get(
-  "/all",
-  authentication,
-  UserIdValidation,
-  Get_Posts_By_UserID
-);
+router.get("/all/self", authentication, Get_Self_Posts);
+router.get("/all", authentication, Get_Posts_By_UserID);
 router.delete("/delete/:post_id", authentication, Delete_Post);
 router.post(
   "/comment/add/:post_id",
@@ -50,19 +47,15 @@ router.post(
   PostIdValidation,
   Add_Comment
 );
-router.post(
-  "/like/add/:post_id",
-  authentication,
-  PostIdValidation,
-  Add_Like
-);
-router.post(
-  "/like/remove/:post_id",
+router.post("/like/add/:post_id", authentication, PostIdValidation, Add_Like);
+router.delete(
+  "/like/delete/:post_id",
   authentication,
   PostIdValidation,
   Remove_Like
 );
 router.get("/comment/get/:post_id", authentication, Get_Posts_Comments);
+router.delete("/comment/delete/:comment_id", authentication, Remove_Comment);
 router.get("/like/get/:post_id", authentication, Get_Posts_Likes);
 router.get("/single/:post_id", authentication, Get_Posts_By_PostID);
 

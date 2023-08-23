@@ -1,4 +1,9 @@
-const { Success, Bad, Image_Exp_Duration } = require("../utils/constant");
+const {
+  Success,
+  Bad,
+  Image_Exp_Duration,
+  Invalid_User,
+} = require("../utils/constant");
 const { bucket_name } = require("../utils/config");
 const { PutObjectCommand } = require("@aws-sdk/client-s3");
 const { s3, Image_Link } = require("../s3_bucket.config");
@@ -15,6 +20,9 @@ const {
   GetComments,
   GetLikes,
   GetPostWithPostId,
+  RemoveComment,
+  GetPostSelf,
+  GetPostByUserId,
 } = require("../models/post.modal");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const {
@@ -24,7 +32,6 @@ const {
 module.exports = {
   Add_Post: async (req, res) => {
     try {
-
       const post_id = uuidv4();
       const user_id = req.customData;
       const caption = req.body.caption;
@@ -56,15 +63,69 @@ module.exports = {
       res.status(Bad).json({ message: err.message, status: Bad });
     }
   },
-  Get_Posts_By_UserID: async (req, res) => {
+  Get_Self_Posts: async (req, res) => {
     try {
-      const postsResponse = await GetPost({ user_id: req.customData });
+      const postsResponse = await GetPostSelf({ user_id: req.customData });
       const posts = postsResponse.rows;
       if (posts.length) {
-        const postsWithImages = await getImageUrls(posts);
-        return res
-          .status(Success)
-          .json({ data: postsWithImages, status: Success });
+        await Promise.all(
+          posts.map(async (item) => {
+            const profile_url = await Image_Link(item.profile_picture);
+            item.profile_picture = profile_url;
+
+            if (item.images.length) {
+              await Promise.all(
+                item.images.map(async (image) => {
+                  let url = await Image_Link(image.image_url);
+                  image.image_url = url;
+                })
+              );
+            }
+            if (item.user_id == req.customData) {
+              item.editable = true;
+            }
+            delete item.user_id;
+
+            return item;
+          })
+        );
+        return res.status(Success).json({ data: posts, status: Success });
+      }
+
+      return res.status(Success).json({ data: [], status: Success });
+    } catch (err) {
+      res.status(Bad).json({ message: err.message, status: Bad });
+    }
+  },
+  Get_Posts_By_UserID: async (req, res) => {
+    try {
+      const postsResponse = await GetPostByUserId({ user_id: req.customData });
+      const posts = postsResponse.rows;
+      if (posts.length) {
+        await Promise.all(
+          posts.map(async (item) => {
+            const profile_url = await Image_Link(item.profile_picture);
+            item.profile_picture = profile_url;
+
+            if (item.images.length) {
+              await Promise.all(
+                item.images.map(async (image) => {
+                  let url = await Image_Link(image.image_url);
+                  image.image_url = url;
+                })
+              );
+            }
+            if (item.user_id == req.customData) {
+              item.editable = true;
+            } else {
+              item.editable = false;
+            }
+            delete item.user_id;
+
+            return item;
+          })
+        );
+        return res.status(Success).json({ data: posts, status: Success });
       }
 
       return res.status(Success).json({ data: [], status: Success });
@@ -80,8 +141,22 @@ module.exports = {
       const comments = commentsResponse.rows;
       await Promise.all(
         comments.map(async (comment) => {
-          let url = await Image_Link(comment.image_url);
-          comment.image_url = url;
+          if (comment.image_url) {
+            let url = await Image_Link(comment?.image_url);
+            comment.image_url = url;
+          } else {
+            comment.image_url = Invalid_User;
+          }
+          if (
+            comment.user_id == req.customData ||
+            comment.post_admin == req.customData
+          ) {
+            comment.editable = true;
+          } else {
+            comment.editable = false;
+          }
+          delete comment.user_id;
+          delete comment.post_admin;
         })
       );
 
@@ -100,12 +175,17 @@ module.exports = {
       if (likes.length) {
         await Promise.all(
           likes.map(async (like) => {
-            let url = await Image_Link(like.image_url);
-            like.image_url = url;
-            if ((like.id = req.customData)) {
+            if (like.image_url) {
+              let url = await Image_Link(like.image_url);
+              like.image_url = url;
+            } else {
+              like.image_url = Invalid_User;
+            }
+
+            if (like.id == req.customData) {
               user_like = true;
             }
-            delete like.id
+            delete like.id;
           })
         );
       }
@@ -182,21 +262,32 @@ module.exports = {
 
         const postImageRes = post.rows[0].images.map(async (image) => {
           const url = await Image_Link(image.image_url);
-          const dimensions = await getImageDimensions(url);
 
-          delete image.image_url;
-          image.src = url;
-          image.width = +(dimensions.width / dimensions.height).toFixed(2);
-          image.height = +(dimensions.height / dimensions.width).toFixed(2);
+          image.image_url = url;
 
           return image;
         });
         await Promise.all(postImageRes);
+        if (post.rows[0].user_id == req.customData) {
+          post.rows[0].editable = true;
+        }
+        delete post.rows[0].user_id;
         return res
           .status(Success)
           .json({ data: post.rows[0], status: Success });
       }
       return res.status(Success).json({ data: null, status: Success });
+    } catch (err) {
+      res.status(Bad).json({ message: err.message, status: Bad });
+    }
+  },
+  Remove_Comment: async (req, res) => {
+    try {
+      await RemoveComment({
+        comment_id: req.params.comment_id,
+      });
+
+      return res.status(Success).json({ status: Success });
     } catch (err) {
       res.status(Bad).json({ message: err.message, status: Bad });
     }

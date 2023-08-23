@@ -27,11 +27,11 @@ module.exports = {
       }
     });
   },
-  GetPost: ({ user_id }) => {
+  GetPostSelf: ({ user_id }) => {
     return new Promise(function (resolve, reject) {
       try {
         const response = client.query(
-          `SELECT users.name AS user_name,profile_pictures.image_url as profile_picture,posts.id AS post_id,posts.caption,posts.created_at,
+          `SELECT posts.user_id,users.name AS user_name,profile_pictures.image_url as profile_picture,posts.id AS post_id,posts.caption,posts.created_at,
           CASE WHEN COUNT(post_images.post_id)>0 THEN ARRAY_AGG(DISTINCT JSONB_BUILD_OBJECT('image_url',post_images.image_url))
           ELSE ARRAY[]::JSONB[] END AS images
           FROM posts 
@@ -48,15 +48,39 @@ module.exports = {
       }
     });
   },
+  GetPostByUserId: ({ user_id }) => {
+    return new Promise(function (resolve, reject) {
+      try {
+        const response = client.query(
+          `SELECT posts.user_id,users.name AS user_name,profile_pictures.image_url as profile_picture,posts.id AS post_id,posts.caption,posts.created_at,
+          CASE WHEN COUNT(post_images.post_id)>0 THEN ARRAY_AGG(DISTINCT JSONB_BUILD_OBJECT('image_url',post_images.image_url))
+          ELSE ARRAY[]::JSONB[] END AS images
+          FROM posts 
+          LEFT JOIN post_images ON post_images.post_id=posts.id 
+          LEFT JOIN users ON users.id=posts.user_id 
+          LEFT JOIN profile_pictures ON profile_pictures.user_id=users.id
+          LEFT JOIN friends ON friends.user1_id=users.id OR friends.user2_id=users.id
+          WHERE users.id=$1 OR friends.user1_id=$1
+          OR friends.user2_id=$1 AND users.status=true AND friends.status=true
+          GROUP BY users.name,posts.id,posts.caption,posts.created_at,profile_pictures.image_url`,
+          [user_id]
+        );
+        resolve(response);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  },
   GetComments: ({ post_id }) => {
     return new Promise(function (resolve, reject) {
       try {
         const response = client.query(
-          `SELECT users.name as user_name,profile_pictures.image_url,comments.content,comments.created_at
+          `SELECT comments.id as comment_id,comments.user_id,posts.user_id as post_admin,users.name as user_name,profile_pictures.image_url,comments.content,comments.created_at
           FROM comments 
           LEFT JOIN users ON users.id=comments.user_id
           LEFT JOIN profile_pictures ON profile_pictures.user_id=users.id
-          WHERE post_id=$1`,
+          LEFT JOIN posts ON posts.id=comments.post_id
+          WHERE post_id=$1 ORDER BY comments.created_at DESC`,
           [post_id]
         );
         resolve(response);
@@ -148,7 +172,7 @@ module.exports = {
     return new Promise((resolve, reject) => {
       try {
         const response = client.query(
-          `SELECT users.name AS user_name,profile_pictures.image_url as profile_picture,posts.id AS post_id,posts.caption,posts.created_at,
+          `SELECT posts.user_id,users.name AS user_name,profile_pictures.image_url as profile_picture,posts.id AS post_id,posts.caption,posts.created_at,
           ARRAY_AGG(DISTINCT JSONB_BUILD_OBJECT('image_url',post_images.image_url)) as images
          FROM posts 
           LEFT JOIN post_images ON post_images.post_id=posts.id 
@@ -158,6 +182,18 @@ module.exports = {
           GROUP BY users.name,posts.id,posts.caption,posts.created_at,profile_pictures.image_url`,
           [post_id]
         );
+        resolve(response);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  },
+  RemoveComment: ({ comment_id }) => {
+    return new Promise((resolve, reject) => {
+      try {
+        const response = client.query(`DELETE FROM comments WHERE id=$1`, [
+          comment_id,
+        ]);
         resolve(response);
       } catch (err) {
         reject(err);

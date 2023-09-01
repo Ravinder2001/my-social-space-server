@@ -1,4 +1,8 @@
-const { AddFriend } = require("../models/friends.modal");
+const {
+  AddFriend,
+  SendFriendRequest,
+  UpdateFriendRequest,
+} = require("../models/friends.modal");
 const { Bad, Success } = require("../utils/constant");
 
 module.exports = {
@@ -7,6 +11,32 @@ module.exports = {
       const response = await AddFriend({
         user1_id: req.customData,
         user2_id: req.body.user_id,
+      });
+      if (response.rowCount > 0) {
+        res.status(Success).json({ status: Success });
+      }
+    } catch (err) {
+      res.status(Bad).json({ message: err.message, status: Bad });
+    }
+  },
+  Send_Friend_Request: async (req, res) => {
+    try {
+      const response = await SendFriendRequest({
+        sender_id: req.customData,
+        receiver_id: req.body.user_id,
+      });
+      if (response.rowCount > 0) {
+        res.status(Success).json({ status: Success });
+      }
+    } catch (err) {
+      res.status(Bad).json({ message: err.message, status: Bad });
+    }
+  },
+  Update_Friend_Request: async (req, res) => {
+    try {
+      const response = await UpdateFriendRequest({
+        friend_request_id: req.params.friend_request_id,
+        status: req.params.status == 1 ? "accepted" : "declined",
       });
       if (response.rowCount > 0) {
         res.status(Success).json({ status: Success });

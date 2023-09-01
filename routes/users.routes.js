@@ -7,6 +7,10 @@ const {
   Add_Profile_Picture,
   Get_Profile_Picture,
   ServerHealth,
+  Delete_Profile_Picture,
+  Get_All_Users,
+  Get_Profile_Data,
+  Update_Profile_Data,
 } = require("../controllers/users.controller");
 const { Verify_Id_Token } = require("../middlewares/middlewares");
 const {
@@ -58,4 +62,7 @@ router.post(
   Add_Profile_Picture
 );
 router.get("/getProfilePicture", authentication, Get_Profile_Picture);
+router.post("/updateProfileData", authentication, Update_Profile_Data);
+router.get("/getAllUsers/:name", authentication, Get_All_Users);
+router.get("/getProfileData", authentication, Get_Profile_Data);
 module.exports = router;

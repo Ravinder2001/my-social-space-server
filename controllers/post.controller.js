@@ -38,8 +38,7 @@ module.exports = {
       const images = req.files;
       await AddPost({ id: post_id, user_id, caption });
       const imageUploadPromises = images.map(async (image, index) => {
-        const image_name = image.originalname.split(".")[1];
-        image.originalname = `image_${index + 1}` + "." + image_name;
+        image.originalname = `image_${index + 1}` + ".jpeg";
         const Key = `Posts/${user_id}/${post_id}/${image.originalname}`;
         const params = {
           Bucket: bucket_name,
@@ -57,7 +56,7 @@ module.exports = {
       await Promise.all(imageUploadPromises);
 
       return res
-        .status(200)
+        .status(Success)
         .json({ message: "Post created successfully", status: Success });
     } catch (err) {
       res.status(Bad).json({ message: err.message, status: Bad });

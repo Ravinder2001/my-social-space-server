@@ -7,5 +7,6 @@ module.exports={
     UserIdNotFound:"No user exists with this Id",
     PostIdNotFound:"No Post exists with this Id",
     TokenConflict:"Token conflict you are Unauthorized",
-    ImageSizeError:"Image size should be less than 1 MB"
+    ImageSizeError:"Image size should be less than 1 MB",
+    Something:"Something went wrong",
 }

@@ -1,4 +1,5 @@
 const Joi = require("joi");
+const { Image_Size } = require("../../../utils/constant");
 
 const validator = (schema) => (payload) => {
   return schema.validate(payload, { abortEarly: false });
@@ -13,7 +14,7 @@ const post_file = Joi.array()
     mimetype: Joi.string().required(),
     buffer: Joi.binary().required(),
     size: Joi.number()
-      .max(1024 * 1024)
+      .max(Image_Size * 1024 * 1024)
       .required(),
   })
   .max(10)
@@ -28,12 +29,12 @@ const post_body = Joi.object({
     mimetype: Joi.string().required(),
     buffer: Joi.binary().required(),
     size: Joi.number()
-      .max(1024 * 1024)
+      .max(Image_Size * 1024 * 1024)
       .required(),
   }),
 });
 const comment_body = Joi.object({
-  content: Joi.string().max(255).required()
+  content: Joi.string().max(255).required(),
 });
 
 exports.validate_post_file = validator(post_file);

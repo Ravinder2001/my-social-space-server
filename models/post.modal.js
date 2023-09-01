@@ -213,4 +213,26 @@ module.exports = {
       }
     });
   },
+  FetchEditDetailsOfPost: ({ post_id }) => {
+    return new Promise((resolve, reject) => {
+      try {
+        const response = client.query(
+          `
+        SELECT posts.user_id,posts.id AS post_id,posts.caption,posts.created_at,post_privacy.like_allowed,
+        post_privacy.comment_allowed,post_privacy.share_allowed,post_privacy.visibility,
+        ARRAY_AGG(DISTINCT JSONB_BUILD_OBJECT('image_url',post_images.image_url)) as images
+        FROM posts 
+        LEFT JOIN post_images ON post_images.post_id=posts.id 
+        LEFT JOIN post_privacy ON post_privacy.post_id=posts.id
+        WHERE posts.id=$1
+        GROUP BY posts.id,posts.caption,posts.created_at,post_privacy.like_allowed,post_privacy.comment_allowed,
+        post_privacy.share_allowed,post_privacy.visibility`,
+          [post_id]
+        );
+        resolve(response);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  },
 };

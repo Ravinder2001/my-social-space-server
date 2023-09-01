@@ -11,10 +11,8 @@ const { v4: uuidv4 } = require("uuid");
 const {
   AddPost,
   AddPostImages,
-  GetPost,
   DeletePost,
   AddComment,
-  AddLikes,
   AddLike,
   RemoveLike,
   GetComments,
@@ -23,6 +21,7 @@ const {
   RemoveComment,
   GetPostSelf,
   GetPostByUserId,
+  FetchEditDetailsOfPost,
 } = require("../models/post.modal");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const {
@@ -86,8 +85,8 @@ module.exports = {
 
             if (item.visibility == "private") {
               item.private = true;
-            }else{
-              item.private = false
+            } else {
+              item.private = false;
             }
             delete item.user_id;
             delete item.visibility;
@@ -299,6 +298,17 @@ module.exports = {
       });
 
       return res.status(Success).json({ status: Success });
+    } catch (err) {
+      res.status(Bad).json({ message: err.message, status: Bad });
+    }
+  },
+  Fetch_Edit_Details_Of_Post: async (req, res) => {
+    try {
+      const response = await FetchEditDetailsOfPost({
+        post_id: req.params.post_id,
+      });
+
+      return res.status(Success).json({ data: response.rows[0], status: Success });
     } catch (err) {
       res.status(Bad).json({ message: err.message, status: Bad });
     }

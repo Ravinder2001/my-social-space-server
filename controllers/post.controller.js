@@ -83,8 +83,14 @@ module.exports = {
             if (item.user_id == req.customData) {
               item.editable = true;
             }
-            delete item.user_id;
 
+            if (item.visibility == "private") {
+              item.private = true;
+            }else{
+              item.private = false
+            }
+            delete item.user_id;
+            delete item.visibility;
             return item;
           })
         );
@@ -115,6 +121,9 @@ module.exports = {
               );
             }
             if (item.user_id == req.customData) {
+              item.comment_allowed = true;
+              item.like_allowed = true;
+              item.share_allowed = true;
               item.editable = true;
             } else {
               item.editable = false;
@@ -269,6 +278,9 @@ module.exports = {
         await Promise.all(postImageRes);
         if (post.rows[0].user_id == req.customData) {
           post.rows[0].editable = true;
+          post.rows[0].comment_allowed = true;
+          post.rows[0].like_allowed = true;
+          post.rows[0].share_allowed = true;
         }
         delete post.rows[0].user_id;
         return res

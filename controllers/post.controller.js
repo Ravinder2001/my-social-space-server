@@ -307,6 +307,13 @@ module.exports = {
       const response = await FetchEditDetailsOfPost({
         post_id: req.params.post_id,
       });
+      await Promise.all(
+        response.rows[0].images.map(async (image) => {
+          let url = await Image_Link(image.image_url);
+          image.image_url = url;
+        })
+      );
+
 
       return res.status(Success).json({ data: response.rows[0], status: Success });
     } catch (err) {

@@ -1,5 +1,12 @@
 const express = require("express");
-const { Add_Friend } = require("../controllers/friends.controller");
+const {
+  Add_Friend,
+  Send_Friend_Request,
+  Update_Friend_Request,
+  Get_Friend_Request_List,
+  Accept_Friend_Request,
+  Delete_Friend_Request,
+} = require("../controllers/friends.controller");
 const authentication = require("../helpers/JWT/authentication");
 const {
   Friends_Validations,
@@ -11,11 +18,21 @@ const {
 const router = express.Router();
 
 router.post(
-  "/add",
+  "/send_friend_request",
   authentication,
   Friends_Validations.AddFriendsBody,
-  FriendIdValidation,
-  Add_Friend
+  Send_Friend_Request
 );
+router.put(
+  "/accept_friend_request",
+  authentication,
+  Accept_Friend_Request
+);
+router.delete(
+  "/delete_friend_request/:friend_request_id",
+  authentication,
+  Delete_Friend_Request
+);
+router.get("/getRequestList", authentication, Get_Friend_Request_List);
 
 module.exports = router;

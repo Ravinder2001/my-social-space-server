@@ -31,15 +31,45 @@ module.exports = {
     return new Promise(function (resolve, reject) {
       try {
         const response = client.query(
-          `SELECT posts.user_id,users.name AS user_name,profile_pictures.image_url as profile_picture,posts.id AS post_id,posts.caption,posts.created_at,
+          `SELECT posts.user_id,users.name AS user_name,profile_pictures.image_url as profile_picture,
+          posts.id AS post_id,posts.caption,posts.created_at,post_privacy.visibility,COUNT (likes.id) as likes_count,
+          (SELECT COUNT(likes.id) as user_like FROM likes WHERE likes.user_id = $1),
           CASE WHEN COUNT(post_images.post_id)>0 THEN ARRAY_AGG(DISTINCT JSONB_BUILD_OBJECT('image_url',post_images.image_url))
           ELSE ARRAY[]::JSONB[] END AS images
           FROM posts 
           LEFT JOIN post_images ON post_images.post_id=posts.id 
           LEFT JOIN users ON users.id=posts.user_id 
           LEFT JOIN profile_pictures ON profile_pictures.user_id=users.id
+          LEFT JOIN post_privacy ON post_privacy.post_id=posts.id
+          LEFT JOIN likes ON likes.post_id=posts.id
           WHERE posts.user_id=$1 AND users.status=true
-          GROUP BY users.name,posts.id,posts.caption,posts.created_at,profile_pictures.image_url`,
+          GROUP BY users.name,posts.id,posts.caption,posts.created_at,profile_pictures.image_url,post_privacy.visibility`,
+          [user_id]
+        );
+        resolve(response);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  },
+  GetPostOfAnotherUser: ({ user_id }) => {
+    return new Promise(function (resolve, reject) {
+      try {
+        const response = client.query(
+          `SELECT posts.user_id,users.name AS user_name,profile_pictures.image_url as profile_picture,posts.id AS post_id,posts.caption,posts.created_at,
+          post_privacy.like_allowed,post_privacy.comment_allowed,COUNT (likes.id) as likes_count,
+          post_privacy.share_allowed, (SELECT COUNT(likes.id) as user_like FROM likes WHERE likes.user_id = $1),
+          CASE WHEN COUNT(post_images.post_id)>0 THEN ARRAY_AGG(DISTINCT JSONB_BUILD_OBJECT('image_url',post_images.image_url))
+          ELSE ARRAY[]::JSONB[] END AS images
+          FROM posts 
+          LEFT JOIN post_images ON post_images.post_id=posts.id 
+          LEFT JOIN users ON users.id=posts.user_id 
+          LEFT JOIN profile_pictures ON profile_pictures.user_id=users.id
+          LEFT JOIN post_privacy ON post_privacy.post_id=posts.id
+          LEFT JOIN likes ON likes.post_id=posts.id
+          WHERE posts.user_id=$1 AND users.status=true AND post_privacy.visibility!='private'
+          GROUP BY users.name,posts.id,posts.caption,posts.created_at,profile_pictures.image_url,post_privacy.like_allowed,post_privacy.comment_allowed,
+          post_privacy.share_allowed`,
           [user_id]
         );
         resolve(response);
@@ -52,7 +82,9 @@ module.exports = {
     return new Promise(function (resolve, reject) {
       try {
         const response = client.query(
-          `SELECT posts.user_id,users.name AS user_name,profile_pictures.image_url as profile_picture,posts.id AS post_id,posts.caption,posts.created_at,
+          `SELECT posts.user_id,users.name AS user_name,profile_pictures.image_url as profile_picture,
+          posts.id AS post_id,posts.caption,posts.created_at,post_privacy.like_allowed,post_privacy.comment_allowed,
+          post_privacy.share_allowed,COUNT (likes.id) as likes_count, (SELECT COUNT(likes.id) as user_like FROM likes WHERE likes.user_id = $1),
           CASE WHEN COUNT(post_images.post_id)>0 THEN ARRAY_AGG(DISTINCT JSONB_BUILD_OBJECT('image_url',post_images.image_url))
           ELSE ARRAY[]::JSONB[] END AS images
           FROM posts 
@@ -60,9 +92,16 @@ module.exports = {
           LEFT JOIN users ON users.id=posts.user_id 
           LEFT JOIN profile_pictures ON profile_pictures.user_id=users.id
           LEFT JOIN friends ON friends.user1_id=users.id OR friends.user2_id=users.id
-          WHERE users.id=$1 OR friends.user1_id=$1
-          OR friends.user2_id=$1 AND users.status=true AND friends.status=true
-          GROUP BY users.name,posts.id,posts.caption,posts.created_at,profile_pictures.image_url`,
+          LEFT JOIN post_privacy ON post_privacy.post_id=posts.id 
+          LEFT JOIN likes ON likes.post_id=posts.id 
+          WHERE (users.id = $1 
+          OR friends.user1_id = $1
+          OR friends.user2_id = $1)
+          AND users.status=true 
+          AND (friends.status IS Null OR friends.status=true)
+          AND post_privacy.visibility != 'private'
+          GROUP BY users.name,posts.id,posts.caption,posts.created_at,profile_pictures.image_url,post_privacy.like_allowed,post_privacy.comment_allowed,
+          post_privacy.share_allowed`,
           [user_id]
         );
         resolve(response);
@@ -173,13 +212,17 @@ module.exports = {
       try {
         const response = client.query(
           `SELECT posts.user_id,users.name AS user_name,profile_pictures.image_url as profile_picture,posts.id AS post_id,posts.caption,posts.created_at,
+          post_privacy.like_allowed,post_privacy.comment_allowed,post_privacy.share_allowed,COUNT (likes.id) as likes_count, (SELECT COUNT(likes.id) as user_like FROM likes WHERE likes.user_id = $1),
           ARRAY_AGG(DISTINCT JSONB_BUILD_OBJECT('image_url',post_images.image_url)) as images
          FROM posts 
           LEFT JOIN post_images ON post_images.post_id=posts.id 
           LEFT JOIN users ON users.id=posts.user_id
           LEFT JOIN profile_pictures ON profile_pictures.user_id=users.id
+          LEFT JOIN post_privacy ON post_privacy.post_id=posts.id
+          LEFT JOIN likes ON likes.post_id=posts.id
           WHERE posts.id=$1 AND users.status=true
-          GROUP BY users.name,posts.id,posts.caption,posts.created_at,profile_pictures.image_url`,
+          GROUP BY users.name,posts.id,posts.caption,posts.created_at,profile_pictures.image_url,profile_pictures.image_url,post_privacy.like_allowed,post_privacy.comment_allowed,
+          post_privacy.share_allowed`,
           [post_id]
         );
         resolve(response);
@@ -194,6 +237,28 @@ module.exports = {
         const response = client.query(`DELETE FROM comments WHERE id=$1`, [
           comment_id,
         ]);
+        resolve(response);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  },
+  FetchEditDetailsOfPost: ({ post_id }) => {
+    return new Promise((resolve, reject) => {
+      try {
+        const response = client.query(
+          `
+        SELECT posts.user_id,posts.id AS post_id,posts.caption,posts.created_at,post_privacy.like_allowed,
+        post_privacy.comment_allowed,post_privacy.share_allowed,post_privacy.visibility,
+        ARRAY_AGG(DISTINCT JSONB_BUILD_OBJECT('image_url',post_images.image_url)) as images
+        FROM posts 
+        LEFT JOIN post_images ON post_images.post_id=posts.id 
+        LEFT JOIN post_privacy ON post_privacy.post_id=posts.id
+        WHERE posts.id=$1
+        GROUP BY posts.id,posts.caption,posts.created_at,post_privacy.like_allowed,post_privacy.comment_allowed,
+        post_privacy.share_allowed,post_privacy.visibility`,
+          [post_id]
+        );
         resolve(response);
       } catch (err) {
         reject(err);

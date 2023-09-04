@@ -4,7 +4,9 @@ CREATE TABLE users(
     email VARCHAR(255) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    status BOOLEAN NOT NULL DEFAULT true
+    status BOOLEAN NOT NULL DEFAULT true,
+    job VARCHAR(30),
+    location VARCHAR(30),
 );
 
 CREATE TABLE friends(
@@ -14,8 +16,8 @@ CREATE TABLE friends(
       status BOOLEAN NOT NULL DEFAULT true,
       created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY(user1_id) REFERENCES users(id) ON DELETE CASCADE,
-      FOREIGN KEY(user2_id) REFERENCES users(id) ON DELETE CASCADE,
-)
+      FOREIGN KEY(user2_id) REFERENCES users(id) ON DELETE CASCADE
+);
 
 CREATE TABLE posts(
     id VARCHAR(255) NOT NULL Primary key,
@@ -56,4 +58,23 @@ CREATE TABLE profile_pictures(
     image_url VARCHAR(500) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE friend_requests (
+    id SERIAL PRIMARY KEY,
+    sender_id VARCHAR(255) NOT NULL,
+    receiver_id VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (sender_id) REFERENCES users(id),
+    FOREIGN KEY (receiver_id) REFERENCES users(id)
+);
+
+CREATE TABLE post_privacy (
+    id SERIAL PRIMARY KEY,
+    post_id VARCHAR(255) NOT NULL UNIQUE,
+    comment_allowed BOOLEAN DEFAULT true,
+    like_allowed BOOLEAN DEFAULT true,
+    share_allowed BOOLEAN DEFAULT true,
+    visibility VARCHAR(10) DEFAULT 'public' CHECK (visibility IN ('public', 'friends', 'private')),
+    FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE
 );

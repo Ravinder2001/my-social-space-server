@@ -11,10 +11,8 @@ const { v4: uuidv4 } = require("uuid");
 const {
   AddPost,
   AddPostImages,
-  GetPost,
   DeletePost,
   AddComment,
-  AddLikes,
   AddLike,
   RemoveLike,
   GetComments,
@@ -23,6 +21,8 @@ const {
   RemoveComment,
   GetPostSelf,
   GetPostByUserId,
+  FetchEditDetailsOfPost,
+  GetPostOfAnotherUser,
 } = require("../models/post.modal");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const {
@@ -38,8 +38,7 @@ module.exports = {
       const images = req.files;
       await AddPost({ id: post_id, user_id, caption });
       const imageUploadPromises = images.map(async (image, index) => {
-        const image_name = image.originalname.split(".")[1];
-        image.originalname = `image_${index + 1}` + "." + image_name;
+        image.originalname = `image_${index + 1}` + ".jpeg";
         const Key = `Posts/${user_id}/${post_id}/${image.originalname}`;
         const params = {
           Bucket: bucket_name,
@@ -57,7 +56,7 @@ module.exports = {
       await Promise.all(imageUploadPromises);
 
       return res
-        .status(200)
+        .status(Success)
         .json({ message: "Post created successfully", status: Success });
     } catch (err) {
       res.status(Bad).json({ message: err.message, status: Bad });
@@ -84,8 +83,47 @@ module.exports = {
             if (item.user_id == req.customData) {
               item.editable = true;
             }
-            delete item.user_id;
 
+            if (item.visibility == "private") {
+              item.private = true;
+            } else {
+              item.private = false;
+            }
+            delete item.user_id;
+            delete item.visibility;
+            return item;
+          })
+        );
+        return res.status(Success).json({ data: posts, status: Success });
+      }
+
+      return res.status(Success).json({ data: [], status: Success });
+    } catch (err) {
+      res.status(Bad).json({ message: err.message, status: Bad });
+    }
+  },
+  Get_Post_Of_Another_User: async (req, res) => {
+    try {
+      const postsResponse = await GetPostOfAnotherUser({
+        user_id: req.params.user_id,
+      });
+      const posts = postsResponse.rows;
+      if (posts.length) {
+        await Promise.all(
+          posts.map(async (item) => {
+            const profile_url = await Image_Link(item.profile_picture);
+            item.profile_picture = profile_url;
+
+            if (item.images.length) {
+              await Promise.all(
+                item.images.map(async (image) => {
+                  let url = await Image_Link(image.image_url);
+                  image.image_url = url;
+                })
+              );
+            }
+            item.editable = false;
+            delete item.user_id;
             return item;
           })
         );
@@ -116,6 +154,9 @@ module.exports = {
               );
             }
             if (item.user_id == req.customData) {
+              item.comment_allowed = true;
+              item.like_allowed = true;
+              item.share_allowed = true;
               item.editable = true;
             } else {
               item.editable = false;
@@ -171,7 +212,7 @@ module.exports = {
         post_id: req.params.post_id,
       });
       const likes = likesResponse.rows;
-      let user_like = false;
+
       if (likes.length) {
         await Promise.all(
           likes.map(async (like) => {
@@ -181,10 +222,6 @@ module.exports = {
             } else {
               like.image_url = Invalid_User;
             }
-
-            if (like.id == req.customData) {
-              user_like = true;
-            }
             delete like.id;
           })
         );
@@ -192,7 +229,7 @@ module.exports = {
 
       res
         .status(Success)
-        .json({ data: { list: likes, user_like: user_like }, status: Success });
+        .json({ data:likes, status: Success });
     } catch (err) {
       res.status(Bad).json({ message: err.message, status: Bad });
     }
@@ -270,6 +307,9 @@ module.exports = {
         await Promise.all(postImageRes);
         if (post.rows[0].user_id == req.customData) {
           post.rows[0].editable = true;
+          post.rows[0].comment_allowed = true;
+          post.rows[0].like_allowed = true;
+          post.rows[0].share_allowed = true;
         }
         delete post.rows[0].user_id;
         return res
@@ -288,6 +328,25 @@ module.exports = {
       });
 
       return res.status(Success).json({ status: Success });
+    } catch (err) {
+      res.status(Bad).json({ message: err.message, status: Bad });
+    }
+  },
+  Fetch_Edit_Details_Of_Post: async (req, res) => {
+    try {
+      const response = await FetchEditDetailsOfPost({
+        post_id: req.params.post_id,
+      });
+      await Promise.all(
+        response.rows[0].images.map(async (image) => {
+          let url = await Image_Link(image.image_url);
+          image.image_url = url;
+        })
+      );
+
+      return res
+        .status(Success)
+        .json({ data: response.rows[0], status: Success });
     } catch (err) {
       res.status(Bad).json({ message: err.message, status: Bad });
     }

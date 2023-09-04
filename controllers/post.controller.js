@@ -104,7 +104,9 @@ module.exports = {
   },
   Get_Post_Of_Another_User: async (req, res) => {
     try {
-      const postsResponse = await GetPostOfAnotherUser({ user_id: req.params.user_id });
+      const postsResponse = await GetPostOfAnotherUser({
+        user_id: req.params.user_id,
+      });
       const posts = postsResponse.rows;
       if (posts.length) {
         await Promise.all(
@@ -120,7 +122,7 @@ module.exports = {
                 })
               );
             }
-            item.editable=false
+            item.editable = false;
             delete item.user_id;
             return item;
           })
@@ -210,7 +212,7 @@ module.exports = {
         post_id: req.params.post_id,
       });
       const likes = likesResponse.rows;
-      let user_like = false;
+
       if (likes.length) {
         await Promise.all(
           likes.map(async (like) => {
@@ -220,10 +222,6 @@ module.exports = {
             } else {
               like.image_url = Invalid_User;
             }
-
-            if (like.id == req.customData) {
-              user_like = true;
-            }
             delete like.id;
           })
         );
@@ -231,7 +229,7 @@ module.exports = {
 
       res
         .status(Success)
-        .json({ data: { list: likes, user_like: user_like }, status: Success });
+        .json({ data:likes, status: Success });
     } catch (err) {
       res.status(Bad).json({ message: err.message, status: Bad });
     }
@@ -346,8 +344,9 @@ module.exports = {
         })
       );
 
-
-      return res.status(Success).json({ data: response.rows[0], status: Success });
+      return res
+        .status(Success)
+        .json({ data: response.rows[0], status: Success });
     } catch (err) {
       res.status(Bad).json({ message: err.message, status: Bad });
     }

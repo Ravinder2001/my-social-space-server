@@ -64,7 +64,6 @@ CREATE TABLE friend_requests (
     id SERIAL PRIMARY KEY,
     sender_id VARCHAR(255) NOT NULL,
     receiver_id VARCHAR(255) NOT NULL,
-    status INTEGER NOT NULL DEFAULT 1,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (sender_id) REFERENCES users(id),
     FOREIGN KEY (receiver_id) REFERENCES users(id)

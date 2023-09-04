@@ -10,6 +10,7 @@ const {
   UpdateProfileData,
   GetAllUsers,
   GetProfileData,
+  GetAnotherUserProfileData,
 } = require("../models/users.model");
 const { v4: uuidv4 } = require("uuid");
 const { Success, Bad } = require("../utils/constant");
@@ -22,6 +23,9 @@ const {
 const { bucket_name } = require("../utils/config");
 const { PutObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3");
 const { s3, Image_Link } = require("../s3_bucket.config");
+const {
+  GetFriendRequestBySenderAndReceiver,
+} = require("../models/friends.modal");
 
 module.exports = {
   ServerHealth: (req, res) => {
@@ -241,8 +245,59 @@ module.exports = {
   Get_Profile_Data: async (req, res) => {
     try {
       const response = await GetProfileData({ id: req.customData });
+      if (response.rows.length) {
+        const url = await Image_Link(response.rows[0].profile_picture);
+        response.rows[0].profile_picture = url;
+        return res.status(Success).json({
+          data: response.rows[0],
+          status: Success,
+        });
+      }
       return res.status(Success).json({
-        data: response.rows[0],
+        data: null,
+        status: Success,
+      });
+    } catch (err) {
+      res.status(Bad).json({ message: err.message, status: Bad });
+    }
+  },
+  Get_Another_User_Profile_Data: async (req, res) => {
+    try {
+      const response = await GetAnotherUserProfileData({
+        secondary_user: req.params.user_id,
+        main_user: req.customData,
+      });
+      if (response.rows.length) {
+        let data = response.rows[0];
+        const url = await Image_Link(data.profile_picture);
+        data.profile_picture = url;
+        if (data.friend_request_received == 1) {
+          let friendRequestResponse = await GetFriendRequestBySenderAndReceiver(
+            {
+              receiver_id: req.customData,
+              sender_id: req.params.user_id,
+            }
+          );
+          data.friend_Request_Id = friendRequestResponse.rows[0].id;
+        }
+        if (data.friend_request_sent == 1) {
+          let friendRequestResponse = await GetFriendRequestBySenderAndReceiver(
+            {
+              sender_id: req.customData,
+              receiver_id: req.params.user_id,
+            }
+          );
+          data.friend_Request_Id = friendRequestResponse.rows[0].id;
+        }
+
+        return res.status(Success).json({
+          data: data,
+          status: Success,
+        });
+      }
+
+      return res.status(Success).json({
+        data: null,
         status: Success,
       });
     } catch (err) {

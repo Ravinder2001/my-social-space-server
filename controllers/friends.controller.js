@@ -3,25 +3,13 @@ const {
   SendFriendRequest,
   UpdateFriendRequest,
   GetFriendRequestList,
-  AcceptFriendRequest,
+  DeleteFriendRequest,
 } = require("../models/friends.modal");
 const { Image_Link } = require("../s3_bucket.config");
 const { Bad, Success } = require("../utils/constant");
+const { Something } = require("../utils/message");
 
 module.exports = {
-  Add_Friend: async (req, res) => {
-    try {
-      const response = await AddFriend({
-        user1_id: req.customData,
-        user2_id: req.body.user_id,
-      });
-      if (response.rowCount > 0) {
-        res.status(Success).json({ status: Success });
-      }
-    } catch (err) {
-      res.status(Bad).json({ message: err.message, status: Bad });
-    }
-  },
   Send_Friend_Request: async (req, res) => {
     try {
       const response = await SendFriendRequest({
@@ -37,9 +25,26 @@ module.exports = {
   },
   Accept_Friend_Request: async (req, res) => {
     try {
-      const response = await AcceptFriendRequest({
+      const friendsResponse = await AddFriend({
+        user1_id: req.customData,
+        user2_id: req.body.user_id,
+      });
+      if (friendsResponse.rowCount > 0) {
+        const deleteRequest = await DeleteFriendRequest({
+          friend_request_id: req.body.request_id,
+        });
+
+        return res.status(Success).json({ status: Success });
+      }
+      return res.status(Bad).json({ message: Something, status: Bad });
+    } catch (err) {
+      res.status(Bad).json({ message: err.message, status: Bad });
+    }
+  },
+  Delete_Friend_Request: async (req, res) => {
+    try {
+      const response = await DeleteFriendRequest({
         friend_request_id: req.params.friend_request_id,
-        status: 2,
       });
       if (response.rowCount > 0) {
         res.status(Success).json({ status: Success });

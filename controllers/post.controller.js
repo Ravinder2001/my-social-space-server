@@ -22,6 +22,7 @@ const {
   GetPostSelf,
   GetPostByUserId,
   FetchEditDetailsOfPost,
+  GetPostOfAnotherUser,
 } = require("../models/post.modal");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const {
@@ -90,6 +91,37 @@ module.exports = {
             }
             delete item.user_id;
             delete item.visibility;
+            return item;
+          })
+        );
+        return res.status(Success).json({ data: posts, status: Success });
+      }
+
+      return res.status(Success).json({ data: [], status: Success });
+    } catch (err) {
+      res.status(Bad).json({ message: err.message, status: Bad });
+    }
+  },
+  Get_Post_Of_Another_User: async (req, res) => {
+    try {
+      const postsResponse = await GetPostOfAnotherUser({ user_id: req.params.user_id });
+      const posts = postsResponse.rows;
+      if (posts.length) {
+        await Promise.all(
+          posts.map(async (item) => {
+            const profile_url = await Image_Link(item.profile_picture);
+            item.profile_picture = profile_url;
+
+            if (item.images.length) {
+              await Promise.all(
+                item.images.map(async (image) => {
+                  let url = await Image_Link(image.image_url);
+                  image.image_url = url;
+                })
+              );
+            }
+            item.editable=false
+            delete item.user_id;
             return item;
           })
         );

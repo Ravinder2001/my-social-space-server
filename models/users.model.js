@@ -130,8 +130,62 @@ module.exports = {
     return new Promise((resolve, reject) => {
       try {
         const response = client.query(
-          `SELECT created_at,job,location FROM users WHERE id=$1`,
+          `SELECT
+          users.created_at,
+          users.job,
+          users.location,
+          COUNT(posts.id) AS post_count,
+          COUNT(friends.id) AS friend_count,
+          profile_pictures.image_url as profile_picture
+      FROM users
+      LEFT JOIN posts ON posts.user_id = users.id
+      LEFT JOIN friends ON (friends.user1_id = users.id OR friends.user2_id = users.id)
+      LEFT JOIN profile_pictures ON profile_pictures.user_id=users.id
+      WHERE users.id = $1
+      GROUP BY users.created_at, users.job, users.location,profile_pictures.image_url;
+      `,
           [id]
+        );
+        resolve(response);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  },
+  GetAnotherUserProfileData: ({ secondary_user, main_user }) => {
+    return new Promise((resolve, reject) => {
+      try {
+        const response = client.query(
+          `SELECT
+          users.created_at,
+          users.job,
+          users.location,
+          COUNT(posts.id) AS post_count,
+          COUNT(friends.id) AS friend_count,
+          profile_pictures.image_url as profile_picture,
+          (
+          SELECT COUNT(*)
+          FROM friends 
+          WHERE (user1_id = $1 AND user2_id = $2) OR (user1_id = $2 AND user2_id = $1)
+          ) AS isFriends,
+          (
+            SELECT COUNT(*)
+          FROM friend_requests 
+          WHERE sender_id = $2 AND receiver_id = $1
+          ) as friend_request_sent,
+          (
+          SELECT COUNT(*)
+          FROM friend_requests 
+          WHERE sender_id = $1 AND receiver_id = $2
+          ) as friend_request_received
+      FROM users
+      LEFT JOIN posts ON posts.user_id = users.id
+      LEFT JOIN friends ON (friends.user1_id = users.id OR friends.user2_id = users.id)
+      LEFT JOIN profile_pictures ON profile_pictures.user_id = users.id
+      WHERE users.id = $1
+      GROUP BY users.created_at, users.job, users.location, profile_pictures.image_url
+      `,
+          [secondary_user, main_user]
         );
         resolve(response);
       } catch (err) {

@@ -11,6 +11,7 @@ const {
   GetAllUsers,
   GetProfileData,
   GetAnotherUserProfileData,
+  GetUserInfo,
 } = require("../models/users.model");
 const { v4: uuidv4 } = require("uuid");
 const { Success, Bad } = require("../utils/constant");
@@ -299,6 +300,24 @@ module.exports = {
       return res.status(Success).json({
         data: null,
         status: Success,
+      });
+    } catch (err) {
+      res.status(Bad).json({ message: err.message, status: Bad });
+    }
+  },
+  Get_User_Info: async (req, res) => {
+    try {
+      const response = await GetUserInfo({ user_id: req.customData });
+      if (response.rows.length) {
+        response.rows[0].username = response.rows[0].name.split(" ")[0];
+        return res.status(Success).json({
+          data: response.rows[0],
+          status: Success,
+        });
+      }
+      return res.status(Bad).json({
+        data: null,
+        status: Bad,
       });
     } catch (err) {
       res.status(Bad).json({ message: err.message, status: Bad });

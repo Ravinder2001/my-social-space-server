@@ -126,6 +126,25 @@ module.exports = {
       }
     });
   },
+  GetUserInfo: ({ user_id }) => {
+    return new Promise((resolve, reject) => {
+      try {
+        const response = client.query(
+          `SELECT users.name,COUNT(posts.id) AS posts_count, COUNT(friends.id) AS friends_count
+          FROM users
+          LEFT JOIN posts ON posts.user_id = users.id
+          LEFT JOIN friends ON (friends.user1_id = users.id OR friends.user2_id = users.id)
+          WHERE users.id=$1
+          GROUP BY users.name
+          `,
+          [user_id]
+        );
+        resolve(response);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  },
   GetProfileData: ({ id }) => {
     return new Promise((resolve, reject) => {
       try {

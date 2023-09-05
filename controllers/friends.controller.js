@@ -4,6 +4,7 @@ const {
   UpdateFriendRequest,
   GetFriendRequestList,
   DeleteFriendRequest,
+  DeleteFriendship,
 } = require("../models/friends.modal");
 const { Image_Link } = require("../s3_bucket.config");
 const { Bad, Success } = require("../utils/constant");
@@ -45,6 +46,19 @@ module.exports = {
     try {
       const response = await DeleteFriendRequest({
         friend_request_id: req.params.friend_request_id,
+      });
+      if (response.rowCount > 0) {
+        res.status(Success).json({ status: Success });
+      }
+    } catch (err) {
+      res.status(Bad).json({ message: err.message, status: Bad });
+    }
+  },
+  Delete_Friendship: async (req, res) => {
+    try {
+      const response = await DeleteFriendship({
+        user1_id: req.customData,
+        user2_id: req.params.user_id,
       });
       if (response.rowCount > 0) {
         res.status(Success).json({ status: Success });

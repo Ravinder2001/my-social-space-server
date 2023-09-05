@@ -6,6 +6,7 @@ const {
   Get_Friend_Request_List,
   Accept_Friend_Request,
   Delete_Friend_Request,
+  Delete_Friendship,
 } = require("../controllers/friends.controller");
 const authentication = require("../helpers/JWT/authentication");
 const {
@@ -23,16 +24,13 @@ router.post(
   Friends_Validations.AddFriendsBody,
   Send_Friend_Request
 );
-router.put(
-  "/accept_friend_request",
-  authentication,
-  Accept_Friend_Request
-);
+router.put("/accept_friend_request", authentication, Accept_Friend_Request);
 router.delete(
   "/delete_friend_request/:friend_request_id",
   authentication,
   Delete_Friend_Request
 );
+router.delete("/unfriend/:user_id", authentication, Delete_Friendship);
 router.get("/getRequestList", authentication, Get_Friend_Request_List);
 
 module.exports = router;

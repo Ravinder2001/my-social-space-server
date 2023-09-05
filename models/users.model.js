@@ -150,6 +150,7 @@ module.exports = {
       try {
         const response = client.query(
           `SELECT
+          users.name,
           users.created_at,
           users.job,
           users.location,
@@ -161,7 +162,7 @@ module.exports = {
       LEFT JOIN friends ON (friends.user1_id = users.id OR friends.user2_id = users.id)
       LEFT JOIN profile_pictures ON profile_pictures.user_id=users.id
       WHERE users.id = $1
-      GROUP BY users.created_at, users.job, users.location,profile_pictures.image_url;
+      GROUP BY users.name,users.created_at, users.job, users.location,profile_pictures.image_url;
       `,
           [id]
         );
@@ -176,6 +177,7 @@ module.exports = {
       try {
         const response = client.query(
           `SELECT
+          users.name,
           users.created_at,
           users.job,
           users.location,
@@ -202,7 +204,7 @@ module.exports = {
       LEFT JOIN friends ON (friends.user1_id = users.id OR friends.user2_id = users.id)
       LEFT JOIN profile_pictures ON profile_pictures.user_id = users.id
       WHERE users.id = $1
-      GROUP BY users.created_at, users.job, users.location, profile_pictures.image_url
+      GROUP BY users.name,users.created_at, users.job, users.location, profile_pictures.image_url
       `,
           [secondary_user, main_user]
         );

@@ -23,6 +23,9 @@ const {
   GetPostByUserId,
   FetchEditDetailsOfPost,
   GetPostOfAnotherUser,
+  AddPostPrivacy,
+  EditPostPrivacy,
+  EditPostCaption,
 } = require("../models/post.modal");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const {
@@ -37,6 +40,13 @@ module.exports = {
       const caption = req.body.caption;
       const images = req.files;
       await AddPost({ id: post_id, user_id, caption });
+      await AddPostPrivacy({
+        post_id: post_id,
+        comment: req.body.comment,
+        like: req.body.like,
+        share: req.body.share,
+        visibility: req.body.visibility,
+      });
       const imageUploadPromises = images.map(async (image, index) => {
         image.originalname = `image_${index + 1}` + ".jpeg";
         const Key = `Posts/${user_id}/${post_id}/${image.originalname}`;
@@ -81,6 +91,9 @@ module.exports = {
               );
             }
             if (item.user_id == req.customData) {
+              item.comment_allowed = true;
+              item.like_allowed = true;
+              item.share_allowed = true;
               item.editable = true;
             }
 
@@ -227,9 +240,28 @@ module.exports = {
         );
       }
 
+      res.status(Success).json({ data: likes, status: Success });
+    } catch (err) {
+      res.status(Bad).json({ message: err.message, status: Bad });
+    }
+  },
+  Edit_Post: async (req,res) => {
+    try {
+      EditPostCaption({
+        post_id: req.params.post_id,
+        caption: req.body.caption,
+      });
+      await EditPostPrivacy({
+        post_id: req.params.post_id,
+        comment_allowed: req.body.comment,
+        like_allowed: req.body.like,
+        share_allowed: req.body.share,
+        visibility: req.body.visibility,
+      });
+
       res
         .status(Success)
-        .json({ data:likes, status: Success });
+        .json({ message: "Post Edited Succesfully", status: Success });
     } catch (err) {
       res.status(Bad).json({ message: err.message, status: Bad });
     }

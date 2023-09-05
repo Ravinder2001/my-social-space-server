@@ -5,6 +5,7 @@ const {
   validate_post_body,
   validate_comment_body,
   validate_like_body,
+  validate_edit_post_body,
 } = require("./validation");
 
 module.exports = {
@@ -41,6 +42,14 @@ module.exports = {
     },
     CommentBody: (req, res, next) => {
       const { error } = validate_comment_body(req.body);
+      if (error)
+        return res
+          .status(Bad)
+          .json({ message: error.details[0].message, status: Bad });
+      return next();
+    },
+    EditPostBody: (req, res, next) => {
+      const { error } = validate_edit_post_body(req.body);
       if (error)
         return res
           .status(Bad)

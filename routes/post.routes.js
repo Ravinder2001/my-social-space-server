@@ -17,6 +17,7 @@ const {
   Get_Self_Posts,
   Fetch_Edit_Details_Of_Post,
   Get_Post_Of_Another_User,
+  Edit_Post,
 } = require("../controllers/post.controller");
 const multer = require("multer");
 const { File_Extension } = require("../utils/constant");
@@ -62,5 +63,10 @@ router.delete("/comment/delete/:comment_id", authentication, Remove_Comment);
 router.get("/like/get/:post_id", authentication, Get_Posts_Likes);
 router.get("/single/:post_id", authentication, Get_Posts_By_PostID);
 router.get("/edit/:post_id/fetch", authentication, Fetch_Edit_Details_Of_Post);
-
+router.put(
+  "/edit/:post_id",
+  authentication,
+  Post_Validations.EditPostBody,
+  Edit_Post
+);
 module.exports = router;

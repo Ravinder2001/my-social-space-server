@@ -266,7 +266,7 @@ module.exports = {
       res.status(Bad).json({ message: err.message, status: Bad });
     }
   },
-  Delete_Post: async () => {
+  Delete_Post: async (req,res) => {
     try {
       const response = await DeletePost({
         post_id: req.params.post_id,
@@ -275,7 +275,7 @@ module.exports = {
       if (response.rowCount > 0) {
         res
           .status(Success)
-          .json({ data: "Post Deleted Succesfully", status: Success });
+          .json({ message: "Post Deleted Succesfully", status: Success });
       }
     } catch (err) {
       res.status(Bad).json({ message: err.message, status: Bad });

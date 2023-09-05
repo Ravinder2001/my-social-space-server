@@ -57,7 +57,8 @@ module.exports = {
           LEFT JOIN post_privacy ON post_privacy.post_id=posts.id
           LEFT JOIN likes ON likes.post_id=posts.id
           WHERE posts.user_id=$1 AND users.status=true
-          GROUP BY users.name,posts.id,posts.caption,posts.created_at,profile_pictures.image_url,post_privacy.visibility`,
+          GROUP BY users.name,posts.id,posts.caption,posts.created_at,profile_pictures.image_url,post_privacy.visibility
+          ORDER BY posts.created_at DESC`,
           [user_id]
         );
         resolve(response);
@@ -83,7 +84,8 @@ module.exports = {
           LEFT JOIN likes ON likes.post_id=posts.id
           WHERE posts.user_id=$1 AND users.status=true AND post_privacy.visibility!='private'
           GROUP BY users.name,posts.id,posts.caption,posts.created_at,profile_pictures.image_url,post_privacy.like_allowed,post_privacy.comment_allowed,
-          post_privacy.share_allowed`,
+          post_privacy.share_allowed
+          ORDER BY posts.created_at DESC`,
           [user_id]
         );
         resolve(response);
@@ -115,7 +117,8 @@ module.exports = {
           AND (friends.status IS Null OR friends.status=true)
           AND post_privacy.visibility != 'private'
           GROUP BY users.name,posts.id,posts.caption,posts.created_at,profile_pictures.image_url,post_privacy.like_allowed,post_privacy.comment_allowed,
-          post_privacy.share_allowed`,
+          post_privacy.share_allowed
+          ORDER BY posts.created_at DESC`,
           [user_id]
         );
         resolve(response);

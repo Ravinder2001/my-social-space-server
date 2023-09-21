@@ -13,6 +13,8 @@ const {
   Update_Profile_Data,
   Get_Another_User_Profile_Data,
   Get_User_Info,
+  Update_User_Online_Status,
+  Get_User_Online_Status,
 } = require("../controllers/users.controller");
 const { Verify_Id_Token } = require("../middlewares/middlewares");
 const {
@@ -64,9 +66,23 @@ router.post(
   Add_Profile_Picture
 );
 router.get("/getProfilePicture", authentication, Get_Profile_Picture);
-router.post("/updateProfileData", authentication, Update_Profile_Data);
+router.put("/updateProfileData", authentication, Update_Profile_Data);
 router.get("/getAllUsers/:name", authentication, Get_All_Users);
 router.get("/getProfileData", authentication, Get_Profile_Data);
-router.get("/getProfileData/:user_id", authentication, Get_Another_User_Profile_Data);
+router.get(
+  "/getProfileData/:user_id",
+  authentication,
+  Get_Another_User_Profile_Data
+);
 router.get("/getUserInfo", authentication, Get_User_Info);
+router.put(
+  "/updateUserOnlineStatus/:status",
+  authentication,
+  Update_User_Online_Status
+);
+router.get(
+  "/getUserOnlineStatus/:user_id",
+  authentication,
+  Get_User_Online_Status
+);
 module.exports = router;

@@ -214,4 +214,43 @@ module.exports = {
       }
     });
   },
+  AddUserOnlineStatus: ({ user_id }) => {
+    return new Promise((resolve, reject) => {
+      try {
+        const response = client.query(
+          `INSERT INTO user_online_status(user_id,status,timestamp,room_id) VALUES($1,'online',CURRENT_TIMESTAMP,null)`,
+          [user_id]
+        );
+        resolve(response);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  },
+  UpdateUserOnlineStatus: ({ user_id, status,room_id }) => {
+    return new Promise((resolve, reject) => {
+      try {
+        const response = client.query(
+          `UPDATE user_online_status SET status=$2,timestamp=CURRENT_TIMESTAMP,room_id=$3 WHERE user_id =$1`,
+          [user_id, status,room_id]
+        );
+        resolve(response);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  },
+  GetUserOnlineStatus: ({ user_id }) => {
+    return new Promise((resolve, reject) => {
+      try {
+        const response = client.query(
+          `SELECT status,timestamp,room_id FROM user_online_status WHERE user_id =$1`,
+          [user_id]
+        );
+        resolve(response);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  },
 };

@@ -12,21 +12,18 @@ const {
   GetProfileData,
   GetAnotherUserProfileData,
   GetUserInfo,
+  AddUserOnlineStatus,
+  UpdateUserOnlineStatus,
+  GetUserOnlineStatus,
 } = require("../models/users.model");
 const { v4: uuidv4 } = require("uuid");
 const { Success, Bad } = require("../utils/constant");
 const bcrypt = require("bcrypt");
-const {
-  InvalidPassword,
-  UserNotFound,
-  Something,
-} = require("../utils/message");
+const { InvalidPassword, UserNotFound, Something } = require("../utils/message");
 const { bucket_name } = require("../utils/config");
 const { PutObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3");
 const { s3, Image_Link } = require("../s3_bucket.config");
-const {
-  GetFriendRequestBySenderAndReceiver,
-} = require("../models/friends.modal");
+const { GetFriendRequestBySenderAndReceiver } = require("../models/friends.modal");
 
 module.exports = {
   ServerHealth: (req, res) => {
@@ -41,6 +38,7 @@ module.exports = {
         email: req.body.email,
         password: hashedPassword,
       });
+      await AddUserOnlineStatus({ user_id: response.rows[0].id });
       let encodeData = {
         id: response.rows[0].id,
         name: response.rows[0].name,
@@ -60,6 +58,7 @@ module.exports = {
         email: req.customData.email,
         password: hashedPassword,
       });
+      await AddUserOnlineStatus({ user_id: response.rows[0].id });
       let encodeData = {
         id: response.rows[0].id,
         name: response.rows[0].name,
@@ -219,9 +218,7 @@ module.exports = {
           status: Success,
         });
       }
-      return res
-        .status(Success)
-        .json({ message: "Profile Data Updated", status: Success });
+      return res.status(Success).json({ message: "Profile Data Updated", status: Success });
     } catch (err) {
       res.status(Bad).json({ message: err.message, status: Bad });
     }
@@ -273,21 +270,17 @@ module.exports = {
         const url = await Image_Link(data.profile_picture);
         data.profile_picture = url;
         if (data.friend_request_received == 1) {
-          let friendRequestResponse = await GetFriendRequestBySenderAndReceiver(
-            {
-              receiver_id: req.customData,
-              sender_id: req.params.user_id,
-            }
-          );
+          let friendRequestResponse = await GetFriendRequestBySenderAndReceiver({
+            receiver_id: req.customData,
+            sender_id: req.params.user_id,
+          });
           data.friend_Request_Id = friendRequestResponse.rows[0].id;
         }
         if (data.friend_request_sent == 1) {
-          let friendRequestResponse = await GetFriendRequestBySenderAndReceiver(
-            {
-              sender_id: req.customData,
-              receiver_id: req.params.user_id,
-            }
-          );
+          let friendRequestResponse = await GetFriendRequestBySenderAndReceiver({
+            sender_id: req.customData,
+            receiver_id: req.params.user_id,
+          });
           data.friend_Request_Id = friendRequestResponse.rows[0].id;
         }
 
@@ -318,6 +311,35 @@ module.exports = {
       return res.status(Bad).json({
         data: null,
         status: Bad,
+      });
+    } catch (err) {
+      res.status(Bad).json({ message: err.message, status: Bad });
+    }
+  },
+  Update_User_Online_Status: async (req, res) => {
+    try {
+      await UpdateUserOnlineStatus({
+        user_id: req.customData,
+        status: req.params.status,
+        room_id: req.body.room_id,
+      });
+
+      return res.status(Success).json({
+        status: Success,
+      });
+    } catch (err) {
+      res.status(Bad).json({ message: err.message, status: Bad });
+    }
+  },
+  Get_User_Online_Status: async (req, res) => {
+    try {
+      const response = await GetUserOnlineStatus({
+        user_id: req.params.user_id,
+      });
+
+      return res.status(Success).json({
+        data: response.rows[0],
+        status: Success,
       });
     } catch (err) {
       res.status(Bad).json({ message: err.message, status: Bad });

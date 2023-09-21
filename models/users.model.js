@@ -150,6 +150,7 @@ module.exports = {
       try {
         const response = client.query(
           `SELECT
+          users.name,
           users.created_at,
           users.job,
           users.location,
@@ -161,7 +162,7 @@ module.exports = {
       LEFT JOIN friends ON (friends.user1_id = users.id OR friends.user2_id = users.id)
       LEFT JOIN profile_pictures ON profile_pictures.user_id=users.id
       WHERE users.id = $1
-      GROUP BY users.created_at, users.job, users.location,profile_pictures.image_url;
+      GROUP BY users.name,users.created_at, users.job, users.location,profile_pictures.image_url;
       `,
           [id]
         );
@@ -176,6 +177,7 @@ module.exports = {
       try {
         const response = client.query(
           `SELECT
+          users.name,
           users.created_at,
           users.job,
           users.location,
@@ -202,9 +204,48 @@ module.exports = {
       LEFT JOIN friends ON (friends.user1_id = users.id OR friends.user2_id = users.id)
       LEFT JOIN profile_pictures ON profile_pictures.user_id = users.id
       WHERE users.id = $1
-      GROUP BY users.created_at, users.job, users.location, profile_pictures.image_url
+      GROUP BY users.name,users.created_at, users.job, users.location, profile_pictures.image_url
       `,
           [secondary_user, main_user]
+        );
+        resolve(response);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  },
+  AddUserOnlineStatus: ({ user_id }) => {
+    return new Promise((resolve, reject) => {
+      try {
+        const response = client.query(
+          `INSERT INTO user_online_status(user_id,status,timestamp,room_id) VALUES($1,'online',CURRENT_TIMESTAMP,null)`,
+          [user_id]
+        );
+        resolve(response);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  },
+  UpdateUserOnlineStatus: ({ user_id, status,room_id }) => {
+    return new Promise((resolve, reject) => {
+      try {
+        const response = client.query(
+          `UPDATE user_online_status SET status=$2,timestamp=CURRENT_TIMESTAMP,room_id=$3 WHERE user_id =$1`,
+          [user_id, status,room_id]
+        );
+        resolve(response);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  },
+  GetUserOnlineStatus: ({ user_id }) => {
+    return new Promise((resolve, reject) => {
+      try {
+        const response = client.query(
+          `SELECT status,timestamp,room_id FROM user_online_status WHERE user_id =$1`,
+          [user_id]
         );
         resolve(response);
       } catch (err) {

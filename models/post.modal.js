@@ -27,6 +27,20 @@ module.exports = {
       }
     });
   },
+  AddPostPrivacy: ({ post_id, comment, like, share, visibility }) => {
+    return new Promise(function (resolve, reject) {
+      try {
+        const response = client.query(
+          `INSERT INTO post_privacy (post_id,comment_allowed,like_allowed,share_allowed,visibility) 
+          VALUES($1,$2,$3,$4,$5)`,
+          [post_id, comment, like, share, visibility]
+        );
+        resolve(response);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  },
   GetPostSelf: ({ user_id }) => {
     return new Promise(function (resolve, reject) {
       try {
@@ -43,7 +57,8 @@ module.exports = {
           LEFT JOIN post_privacy ON post_privacy.post_id=posts.id
           LEFT JOIN likes ON likes.post_id=posts.id
           WHERE posts.user_id=$1 AND users.status=true
-          GROUP BY users.name,posts.id,posts.caption,posts.created_at,profile_pictures.image_url,post_privacy.visibility`,
+          GROUP BY users.name,posts.id,posts.caption,posts.created_at,profile_pictures.image_url,post_privacy.visibility
+          ORDER BY posts.created_at DESC`,
           [user_id]
         );
         resolve(response);
@@ -69,7 +84,8 @@ module.exports = {
           LEFT JOIN likes ON likes.post_id=posts.id
           WHERE posts.user_id=$1 AND users.status=true AND post_privacy.visibility!='private'
           GROUP BY users.name,posts.id,posts.caption,posts.created_at,profile_pictures.image_url,post_privacy.like_allowed,post_privacy.comment_allowed,
-          post_privacy.share_allowed`,
+          post_privacy.share_allowed
+          ORDER BY posts.created_at DESC`,
           [user_id]
         );
         resolve(response);
@@ -101,7 +117,8 @@ module.exports = {
           AND (friends.status IS Null OR friends.status=true)
           AND post_privacy.visibility != 'private'
           GROUP BY users.name,posts.id,posts.caption,posts.created_at,profile_pictures.image_url,post_privacy.like_allowed,post_privacy.comment_allowed,
-          post_privacy.share_allowed`,
+          post_privacy.share_allowed
+          ORDER BY posts.created_at DESC`,
           [user_id]
         );
         resolve(response);
@@ -258,6 +275,39 @@ module.exports = {
         GROUP BY posts.id,posts.caption,posts.created_at,post_privacy.like_allowed,post_privacy.comment_allowed,
         post_privacy.share_allowed,post_privacy.visibility`,
           [post_id]
+        );
+        resolve(response);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  },
+  EditPostCaption: ({ post_id, caption }) => {
+    return new Promise((resolve, reject) => {
+      try {
+        const response = client.query(
+          `UPDATE posts SET caption=$2 WHERE id=$1`,
+          [post_id, caption]
+        );
+        resolve(response);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  },
+  EditPostPrivacy: ({
+    post_id,
+    comment_allowed,
+    like_allowed,
+    share_allowed,
+    visibility,
+  }) => {
+    return new Promise((resolve, reject) => {
+      try {
+        const response = client.query(
+          `UPDATE post_privacy SET comment_allowed=$2,like_allowed=$3,share_allowed=$4,visibility=$5 
+          WHERE post_id=$1`,
+          [post_id, comment_allowed, like_allowed, share_allowed, visibility]
         );
         resolve(response);
       } catch (err) {

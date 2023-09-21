@@ -40,6 +40,19 @@ module.exports = {
       }
     });
   },
+  DeleteFriendship: ({ user1_id, user2_id }) => {
+    return new Promise(function (resolve, reject) {
+      try {
+        const response = client.query(
+          `DELETE FROM friends WHERE (user1_id=$1 AND user2_id=$2) OR (user1_id=$2 AND user2_id=$1)`,
+          [user1_id, user2_id]
+        );
+        resolve(response);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  },
   GetFriendRequestList: ({ user_id }) => {
     return new Promise(function (resolve, reject) {
       try {

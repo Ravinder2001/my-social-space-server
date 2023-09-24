@@ -121,3 +121,11 @@ CREATE TABLE user_online_status(
     FOREIGN KEY (room_id) REFERENCES message_room(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+CREATE TABLE user_socket (
+    id SERIAL PRIMARY KEY,
+    user_id VARCHAR(255) NOT NULL,
+    socket_id VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT user_socket_user_id_unique UNIQUE (user_id)
+);

@@ -67,7 +67,7 @@ module.exports = {
         content: req.body.content,
         content_type: req.body.content_type,
       });
-      res.status(Success).json({ status: Success });
+      res.status(Success).json({ data: response.rows[0], status: Success });
     } catch (err) {
       res.status(Bad).json({ message: err.message, status: Bad });
     }
@@ -81,9 +81,7 @@ module.exports = {
       if (response.rows.length) {
         const link = await Image_Link(response.rows[0].image_url);
         response.rows[0].image_url = link;
-        return res
-          .status(Success)
-          .json({ data: response.rows[0], status: Success });
+        return res.status(Success).json({ data: response.rows[0], status: Success });
       }
       return res.status(Bad).json({ message: Something, status: Bad });
     } catch (err) {

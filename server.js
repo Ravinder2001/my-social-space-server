@@ -12,7 +12,7 @@ const Messages_Routes = require("./routes/messages.routes");
 
 app.use(
   cors({
-    origin: [config.domain,config.localhost_domain],
+    origin: [config.domain, config.localhost_domain],
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
@@ -23,6 +23,13 @@ app.use("/post", Post_Routes);
 app.use("/friends", Friends_Routes);
 app.use("/messages", Messages_Routes);
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Server is running on Port ${PORT}`);
 });
+
+const onlineUsers = new Map();
+
+const initSocket = require("./socket_server");
+const io = initSocket(server, onlineUsers);
+
+module.exports = io;

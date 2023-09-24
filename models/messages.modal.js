@@ -31,7 +31,7 @@ module.exports = {
     return new Promise(function (resolve, reject) {
       try {
         const response = client.query(
-          `SELECT room_members.room_id,
+          `SELECT room_members.room_id,room_members.user_id,
           CASE
               WHEN message_room.type = 1 THEN users.name
               WHEN message_room.type = 2 THEN message_room.name
@@ -72,7 +72,8 @@ module.exports = {
     return new Promise(function (resolve, reject) {
       try {
         const response = client.query(
-          `INSERT INTO messages(room_id,sender_id,content,content_type) VALUES($1,$2,$3,$4)`,
+          `INSERT INTO messages(room_id,sender_id,content,content_type) VALUES($1,$2,$3,$4) 
+           RETURNING id,sender_id,content,content_type,created_at,status`,
           [room_id, sender_id, content, content_type]
         );
         resolve(response);
@@ -121,7 +122,7 @@ module.exports = {
     return new Promise(function (resolve, reject) {
       try {
         const response = client.query(
-          `SELECT id,sender_id,content,content_type,created_at,status FROM messages WHERE messages.room_id=$1`,
+          `SELECT id,sender_id,content,content_type,created_at,status FROM messages WHERE messages.room_id=$1 ORDER BY id DESC`,
           [room_id]
         );
         resolve(response);

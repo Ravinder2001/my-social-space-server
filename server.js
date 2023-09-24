@@ -12,7 +12,7 @@ const Messages_Routes = require("./routes/messages.routes");
 
 app.use(
   cors({
-    origin: [config.domain],
+    origin: [config.domain,config.localhost_domain],
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })

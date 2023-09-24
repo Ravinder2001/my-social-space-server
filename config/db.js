@@ -7,9 +7,6 @@ const client = new Client({
   port: port,
   password: password,
   database: database,
-  ssl:{
-    rejectUnauthorized:false
-  }
 });
 
 client.on("connection", (err) => {

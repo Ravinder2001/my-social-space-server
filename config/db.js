@@ -1,11 +1,15 @@
 const { Client } = require("pg");
+const { host, user, port, password, database } = require("../utils/config");
 
 const client = new Client({
-  host: "localhost",
-  user: "postgres",
-  port: 5432,
-  password: "123",
-  database: "my-social-space",
+  host: host,
+  user: user,
+  port: port,
+  password: password,
+  database: database,
+  ssl:{
+    rejectUnauthorized:false
+  }
 });
 
 client.on("connection", (err) => {

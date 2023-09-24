@@ -6,11 +6,11 @@ let client;
 if (process.env.NODE_ENV === "production") {
   // Production database connection
   client = new Client({
-    host: "production_host",
-    user: "production_user",
-    port: "production_port",
-    password: "production_password",
-    database: "production_database",
+    host: host,
+    user: user,
+    port: port,
+    password: password,
+    database: database,
     ssl: {
       rejectUnauthorized: true, // You should enable SSL for production
     },

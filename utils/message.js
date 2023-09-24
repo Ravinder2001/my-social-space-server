@@ -9,4 +9,5 @@ module.exports={
     TokenConflict:"Token conflict you are Unauthorized",
     ImageSizeError:"Image size should be less than 1 MB",
     Something:"Something went wrong",
+    test:"Something went wrong",
 }

@@ -2,6 +2,11 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 const config = {
+  host: process.env.HOST,
+  user: process.env.USER,
+  port: process.env.PORT,
+  password: process.env.PASSWORD,
+  database: process.env.DATABASE,
   jwt_secret_key: process.env.JWT_SECRET_KEY,
   jwt_expires_in: process.env.JWT_EXPIRATION,
   cusotm_jwt_expires_in: process.env.CUSTOM_JWT_EXPIRATION,

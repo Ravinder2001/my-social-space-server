@@ -6,7 +6,7 @@ CREATE TABLE users(
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     status BOOLEAN NOT NULL DEFAULT true,
     job VARCHAR(30),
-    location VARCHAR(30),
+    location VARCHAR(30)
 );
 
 CREATE TABLE friends(
@@ -85,8 +85,7 @@ CREATE TABLE message_room(
     name VARCHAR(50),
     image_url VARCHAR(500),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    status BOOLEAN DEFAULT TRUE,
-    FOREIGN KEY (admin) REFERENCES users(id) ON DELETE CASCADE
+    status BOOLEAN DEFAULT TRUE
 );
 
 CREATE TABLE room_members(
@@ -107,7 +106,7 @@ CREATE TABLE messages(
     content VARCHAR(255) NOT NULL,
     content_type VARCHAR(10) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    seen_at TIMESTAMP DEFAULT null,
+    seen_at TIMESTAMP,
     status BOOLEAN DEFAULT TRUE,
     FOREIGN KEY (room_id) REFERENCES message_room(id) ON DELETE CASCADE,
     FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE

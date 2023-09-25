@@ -12,9 +12,9 @@ const Messages_Routes = require("./routes/messages.routes");
 
 app.use(
   cors({
-    origin: ["https://my-social-space.vercel.app","http://localhost:4545"],
+    origin: [config.domain,config.localhost_domain],
     methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Content-Type", "Authorization", "Access-Control-Allow-Origin"],
   })
 );
 app.use(express.json());

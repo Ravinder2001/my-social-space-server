@@ -12,10 +12,11 @@ const initSocket = (server, onlineUsers) => {
   });
 
   io.on("connection", async (socket) => {
-    // console.log("Socket connected");
+    console.log("Socket connected");
     global.chatSocket = socket;
 
     socket.on("Add-User", async (userId) => {
+      console.log("User added")
       onlineUsers.set(userId, socket.id);
       await Add_User({ user_id: userId, socket_id: socket.id });
       await UpdateUserOnlineStatus({

@@ -3,9 +3,7 @@ const app = express();
 const cors = require("cors");
 const PORT = 5000;
 const client = require("./config/db");
-const socket = require("socket.io");
 
-const initSocket = require("./socket_server");
 const config = require("./utils/config");
 const Authentication_Routes = require("./routes/users.routes");
 const Post_Routes = require("./routes/post.routes");
@@ -14,7 +12,7 @@ const Messages_Routes = require("./routes/messages.routes");
 
 app.use(
   cors({
-    origin: ["https://my-social-space.vercel.app", "http://localhost:4545"],
+    origin: ["https://my-social-space.vercel.app","http://localhost:4545"],
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
@@ -29,19 +27,9 @@ const server = app.listen(PORT, () => {
   console.log(`Server is running on Port ${PORT}`);
 });
 
-const io = socket(server, {
-  cors: "http://localhost:4545",
-  Credential: true,
-});
+const onlineUsers = new Map();
 
-global.onlineUsers = new Map();
-io.on("connection", async (socket) => {
-  global.chatSocket = socket;
+const initSocket = require("./socket_server");
+const io = initSocket(server, onlineUsers);
 
-  socket.on("Add-User", async (userId) => {
-    console.log("user aya")
-  });
-
-  socket.on("disconnect", async () => {});
-});
 module.exports = io;

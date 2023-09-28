@@ -36,7 +36,7 @@ const io = new Server(server, {
     origin: process.env.NODE_ENV === "production" ? [config.domain, config.localhost_domain] : [config.domain],
   },
   path: "/socket.io",
-  transports: ["websocket"],
+  transports: ["websocket","polling"],
   secure: true,
 });
 const onlineUsers = new Map();

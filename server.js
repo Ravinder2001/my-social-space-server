@@ -33,7 +33,7 @@ const server = app.listen(PORT, () => {
 const io = new Server(server, {
   cors: {
     credentials: true,
-    origin: process.env.NODE_ENV === "production" ? [config.domain, config.localhost_domain] : [config.domain],
+    origin: "*",
   },
 });
 const onlineUsers = new Map();

@@ -41,26 +41,6 @@ io.on("connection", async (socket) => {
   console.log("Socket connected");
   global.chatSocket = socket;
 
-  // Add the following code to handle the "Session ID unknown" error:
-  if (!socket.handshake.query.userId) {
-    // The client has never connected to the server before
-    // or the client's session has expired
-    console.log("Session ID unknown");
-    // Disconnect the client
-    socket.disconnect();
-  } else {
-    // The client has sent a session ID
-    // Check if the session ID is valid
-    // (This can be done by checking the session ID in a database or other store)
-    const userId = await Get_UserId_By_Socket({ socket_id: socket.id });
-    if (!userId.rows.length) {
-      // The session ID is invalid
-      console.log("Session ID unknown");
-      // Disconnect the client
-      socket.disconnect();
-    }
-  }
-
   socket.on("Add-User", async (userId) => {
     console.log("User added");
     onlineUsers.set(userId, socket.id);

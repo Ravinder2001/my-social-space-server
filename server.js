@@ -10,14 +10,16 @@ const Authentication_Routes = require("./routes/users.routes");
 const Post_Routes = require("./routes/post.routes");
 const Friends_Routes = require("./routes/friends.routes");
 const Messages_Routes = require("./routes/messages.routes");
-const { Add_User, Get_UserId_By_Socket, Get_SocketId_By_UserId } = require("./models/socket.modal");
+const {
+  Add_User,
+  Get_UserId_By_Socket,
+  Get_SocketId_By_UserId,
+} = require("./models/socket.modal");
 const { UpdateUserOnlineStatus } = require("./models/users.model");
 console.log("config", config.domain);
 app.use(
   cors({
     origin: "*",
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 app.use(express.json());
@@ -55,11 +57,15 @@ io.on("connection", async (socket) => {
     delete message.sender_id;
     message.isOwnMessage = false;
     const anotherSocketId = await Get_SocketId_By_UserId({ user_id: user_id });
-    socket.to(anotherSocketId.rows[0].socket_id).emit("Message-Receive", { data: message });
+    socket
+      .to(anotherSocketId.rows[0].socket_id)
+      .emit("Message-Receive", { data: message });
   });
 
   socket.on("disconnect", async () => {
-    const disconnectedUserId = await Get_UserId_By_Socket({ socket_id: socket.id });
+    const disconnectedUserId = await Get_UserId_By_Socket({
+      socket_id: socket.id,
+    });
     if (disconnectedUserId.rows.length)
       await UpdateUserOnlineStatus({
         user_id: disconnectedUserId.rows[0].user_id,

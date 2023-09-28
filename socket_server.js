@@ -1,23 +1,22 @@
-const { Server } = require("socket.io");
+const socket = require("socket.io");
 const moment = require("moment");
 const config = require("./utils/config");
 const { Update_User_Online_Status } = require("./controllers/users.controller");
 const { Add_User, Get_UserId_By_Socket, Get_SocketId_By_UserId } = require("./models/socket.modal");
 const { UpdateUserOnlineStatus } = require("./models/users.model");
 
-const initSocket = (server) => {
-  const io =new Server(server, {
+const initSocket = (server, onlineUsers) => {
+  const io = socket(server, {
     cors: [config.localhost_domain, config.domain],
     Credential: true,
   });
-  const onlineUsers = new Map();
 
   io.on("connection", async (socket) => {
     console.log("Socket connected");
     global.chatSocket = socket;
 
     socket.on("Add-User", async (userId) => {
-      console.log("User added");
+      console.log("User added")
       onlineUsers.set(userId, socket.id);
       await Add_User({ user_id: userId, socket_id: socket.id });
       await UpdateUserOnlineStatus({

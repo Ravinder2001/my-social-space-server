@@ -15,7 +15,7 @@ const { UpdateUserOnlineStatus } = require("./models/users.model");
 console.log("config",config.domain)
 app.use(
   cors({
-    origin: process.env.NODE_ENV === "production" ? config.domain : [config.domain],
+    origin: process.env.NODE_ENV === "production" ? [config.domain, config.localhost_domain] : [config.domain],
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
     

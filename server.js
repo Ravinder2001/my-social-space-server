@@ -12,13 +12,12 @@ const Friends_Routes = require("./routes/friends.routes");
 const Messages_Routes = require("./routes/messages.routes");
 const { Add_User, Get_UserId_By_Socket, Get_SocketId_By_UserId } = require("./models/socket.modal");
 const { UpdateUserOnlineStatus } = require("./models/users.model");
-console.log("config",config.domain)
+console.log("config", config.domain);
 app.use(
   cors({
     origin: process.env.NODE_ENV === "production" ? [config.domain, config.localhost_domain] : [config.domain],
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
-    
   })
 );
 app.use(express.json());
@@ -33,8 +32,10 @@ const server = app.listen(PORT, () => {
 
 const io = new Server(server, {
   cors: {
+    credentials: true,
     origin: process.env.NODE_ENV === "production" ? [config.domain, config.localhost_domain] : [config.domain],
   },
+  transports: ["websocket", "polling"],
 });
 const onlineUsers = new Map();
 io.on("connection", async (socket) => {

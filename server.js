@@ -12,7 +12,7 @@ const Friends_Routes = require("./routes/friends.routes");
 const Messages_Routes = require("./routes/messages.routes");
 const { Add_User, Get_UserId_By_Socket, Get_SocketId_By_UserId } = require("./models/socket.modal");
 const { UpdateUserOnlineStatus } = require("./models/users.model");
-
+console.log("config",config.domain)
 app.use(
   cors({
     origin: process.env.NODE_ENV === "production" ? [config.domain, config.localhost_domain] : [config.domain],

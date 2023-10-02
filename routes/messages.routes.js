@@ -7,30 +7,18 @@ const {
   Get_Room_Details,
   Get_Room_Messages,
   Update_Message_Seen_Time,
+  Update_Message_Content,
+  Update_Message_Status,
 } = require("../controllers/messages.controller");
-const {
-  Messages_Validations,
-} = require("../helpers/body_validations/messages/validator");
+const { Messages_Validations } = require("../helpers/body_validations/messages/validator");
 const router = express.Router();
 
-router.post(
-  "/createRoom",
-  authentication,
-  Messages_Validations.CreateRoom,
-  Create_Room
-);
+router.post("/createRoom", authentication, Messages_Validations.CreateRoom, Create_Room);
 router.get("/getRooms", authentication, Get_Room_By_User_id);
-router.post(
-  "/sendMessage",
-  authentication,
-  Messages_Validations.SendMessage,
-  Send_Message
-);
+router.post("/sendMessage", authentication, Messages_Validations.SendMessage, Send_Message);
 router.get("/getRoomDetails/:room_id", authentication, Get_Room_Details);
 router.get("/getRoomMessages", authentication, Get_Room_Messages);
-router.get(
-  "/updateMessageSeenTime/:room_id",
-  authentication,
-  Update_Message_Seen_Time
-);
+router.get("/updateMessageSeenTime/:room_id", authentication, Update_Message_Seen_Time);
+router.put("/updateMessageContent", authentication, Messages_Validations.UpdateMessageContent, Update_Message_Content);
+router.put("/updateMessageStatus", authentication, Messages_Validations.UpdateMessageStatus, Update_Message_Status);
 module.exports = router;

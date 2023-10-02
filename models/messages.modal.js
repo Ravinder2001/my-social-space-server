@@ -124,7 +124,7 @@ module.exports = {
     return new Promise(function (resolve, reject) {
       try {
         const response = client.query(
-          `SELECT id, sender_id, content, content_type, created_at, status 
+          `SELECT id, sender_id, content, content_type, created_at, status,isEdited
             FROM messages 
             WHERE messages.room_id = $1 
             ORDER BY id DESC
@@ -145,6 +145,35 @@ module.exports = {
           `UPDATE messages SET seen_at=CURRENT_TIMESTAMP
           WHERE messages.room_id=$1 AND messages.sender_id != $2 AND messages.seen_at IS NULL`,
           [room_id, receiver_id]
+        );
+        resolve(response);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  },
+  UpdateMessageContent: ({ message_id, content, user_id }) => {
+    return new Promise(function (resolve, reject) {
+      try {
+        const response = client.query(
+          `UPDATE messages SET content=$2,isEdited=true
+          WHERE messages.id=$1 AND messages.sender_id = $3`,
+          [message_id, content, user_id]
+        );
+        resolve(response);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  },
+  UpdateMessageStatus: ({ message_id, status, user_id }) => {
+    return new Promise(function (resolve, reject) {
+      try {
+        console.log(message_id, status, user_id)
+        const response = client.query(
+          `UPDATE messages SET status=$2
+          WHERE messages.id=$1 AND messages.sender_id = $3`,
+          [message_id, status, user_id]
         );
         resolve(response);
       } catch (err) {

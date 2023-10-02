@@ -9,6 +9,8 @@ const {
   UpdateMessageVisibility,
   UpdateMessageVisibilityForRoom,
   UpdateMessageSeenTime,
+  UpdateMessageContent,
+  UpdateMessageStatus,
 } = require("../models/messages.modal");
 const { Image_Link } = require("../s3_bucket.config");
 const { Bad, Success } = require("../utils/constant");
@@ -123,6 +125,32 @@ module.exports = {
       await UpdateMessageSeenTime({
         room_id: req.params.room_id,
         receiver_id: req.customData,
+      });
+
+      return res.status(Success).json({ status: Success });
+    } catch (err) {
+      res.status(Bad).json({ message: err.message, status: Bad });
+    }
+  },
+  Update_Message_Content: async (req, res) => {
+    try {
+      await UpdateMessageContent({
+        message_id: req.body.message_id,
+        content: req.body.content,
+        user_id: req.customData,
+      });
+
+      return res.status(Success).json({ status: Success });
+    } catch (err) {
+      res.status(Bad).json({ message: err.message, status: Bad });
+    }
+  },
+  Update_Message_Status: async (req, res) => {
+    try {
+      await UpdateMessageStatus({
+        message_id: req.body.message_id,
+        status: req.body.status,
+        user_id: req.customData,
       });
 
       return res.status(Success).json({ status: Success });

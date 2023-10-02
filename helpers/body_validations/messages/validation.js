@@ -35,6 +35,16 @@ const message_body = Joi.object({
   content: Joi.string().max(255).required(),
   content_type: Joi.string().max(10).required(),
 });
+const updateMessageContent = Joi.object({
+  message_id: Joi.number().max(255).required(),
+  content: Joi.string().max(255).required(),
+});
+const updateMessageStatus = Joi.object({
+  message_id: Joi.number().max(255).required(),
+  status: Joi.boolean().required(),
+});
 
 exports.validate_room_body = validator(room_body);
 exports.validate_message_body = validator(message_body);
+exports.validate_updateMessageContent = validator(updateMessageContent);
+exports.validate_updateMessageStatus = validator(updateMessageStatus);

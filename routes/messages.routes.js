@@ -27,7 +27,7 @@ router.post(
   Send_Message
 );
 router.get("/getRoomDetails/:room_id", authentication, Get_Room_Details);
-router.get("/getRoomMessages/:room_id", authentication, Get_Room_Messages);
+router.get("/getRoomMessages", authentication, Get_Room_Messages);
 router.get(
   "/updateMessageSeenTime/:room_id",
   authentication,

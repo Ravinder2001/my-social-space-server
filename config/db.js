@@ -12,7 +12,7 @@ if (process.env.NODE_ENV === "production") {
     password: password,
     database: database,
     ssl: {
-      rejectUnauthorized: true, // You should enable SSL for production
+      rejectUnauthorized: false, // You should enable SSL for production
     },
   });
 } else {

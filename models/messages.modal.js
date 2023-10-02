@@ -1,13 +1,11 @@
 const client = require("../config/db");
+const { messgaePerPage } = require("../utils/constant");
 
 module.exports = {
   CreateRoom: ({ id, type, name, image_url }) => {
     return new Promise(function (resolve, reject) {
       try {
-        const response = client.query(
-          `INSERT INTO message_room(id,type,name,image_url) VALUES ($1,$2,$3,$4)`,
-          [id, type, name, image_url]
-        );
+        const response = client.query(`INSERT INTO message_room(id,type,name,image_url) VALUES ($1,$2,$3,$4)`, [id, type, name, image_url]);
         resolve(response);
       } catch (err) {
         reject(err);
@@ -17,10 +15,11 @@ module.exports = {
   AddMembers: ({ room_id, user_id, ismessageallowed }) => {
     return new Promise(function (resolve, reject) {
       try {
-        const response = client.query(
-          `INSERT INTO room_members(room_id,user_id,ismessageallowed) VALUES ($1,$2,$3)`,
-          [room_id, user_id, ismessageallowed]
-        );
+        const response = client.query(`INSERT INTO room_members(room_id,user_id,ismessageallowed) VALUES ($1,$2,$3)`, [
+          room_id,
+          user_id,
+          ismessageallowed,
+        ]);
         resolve(response);
       } catch (err) {
         reject(err);
@@ -73,7 +72,7 @@ module.exports = {
       try {
         const response = client.query(
           `INSERT INTO messages(room_id,sender_id,content,content_type) VALUES($1,$2,$3,$4) 
-           RETURNING id,sender_id,content,content_type,created_at,status`,
+           RETURNING id,content,content_type,created_at,status`,
           [room_id, sender_id, content, content_type]
         );
         resolve(response);
@@ -118,12 +117,19 @@ module.exports = {
       }
     });
   },
-  GetRoomMessages: ({ room_id }) => {
+  GetRoomMessages: ({ room_id, page, messagePerPage }) => {
+    const messagesPerPage = messagePerPage;
+    const offset = page == 1 ? 0 : (page - 1) * messagesPerPage;
+
     return new Promise(function (resolve, reject) {
       try {
         const response = client.query(
-          `SELECT id,sender_id,content,content_type,created_at,status FROM messages WHERE messages.room_id=$1 ORDER BY id DESC`,
-          [room_id]
+          `SELECT id, sender_id, content, content_type, created_at, status 
+            FROM messages 
+            WHERE messages.room_id = $1 
+            ORDER BY id DESC
+            LIMIT $2 OFFSET $3`,
+          [room_id, messagesPerPage, offset]
         );
         resolve(response);
       } catch (err) {
@@ -131,6 +137,7 @@ module.exports = {
       }
     });
   },
+
   UpdateMessageSeenTime: ({ room_id, receiver_id }) => {
     return new Promise(function (resolve, reject) {
       try {

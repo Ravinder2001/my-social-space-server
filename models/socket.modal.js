@@ -1,7 +1,7 @@
 const client = require("../config/db");
 
 module.exports = {
-  Add_User: ({ user_id, socket_id }) => {
+  Add_Socket_User: ({ user_id, socket_id }) => {
     return new Promise(function (resolve, reject) {
       try {
         const upsertQuery = `
@@ -38,4 +38,16 @@ module.exports = {
       }
     });
   },
+  Get_Friends_UserId:({user_id})=>{
+    return new Promise(function (resolve, reject) {
+      try {
+        const response = client.query(`SELECT room_members.user_id FROM message_room 
+        LEFT JOIN room_members ON room_members.room_id=message_room.id 
+        WHERE room_members.user_id !=$1`, [user_id]);
+        resolve(response);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  }
 };

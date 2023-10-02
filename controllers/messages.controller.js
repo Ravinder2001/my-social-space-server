@@ -67,6 +67,8 @@ module.exports = {
         content: req.body.content,
         content_type: req.body.content_type,
       });
+      response.rows[0].isOwnMessage = true;
+
       res.status(Success).json({ data: response.rows[0], status: Success });
     } catch (err) {
       res.status(Bad).json({ message: err.message, status: Bad });
@@ -91,10 +93,12 @@ module.exports = {
   Get_Room_Messages: async (req, res) => {
     try {
       const response = await GetRoomMessages({
-        room_id: req.params.room_id,
+        room_id: req.query.room_id,
+        page: req.query.page,
+        messagePerPage: req.query.messagePerPage,
       });
       if (response.rows.length) {
-        response.rows.map((message) => {
+        response.rows.map((message, index) => {
           if (message.sender_id == req.customData) {
             message.isOwnMessage = true;
           } else {

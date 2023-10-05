@@ -54,7 +54,7 @@ io.on("connection", async (socket) => {
     const SendOnlineMessageToUsers = await Get_Friends_UserId({ user_id: userId });
     SendOnlineMessageToUsers.rows.map(async (user) => {
       const socketId = await Get_SocketId_By_UserId({ user_id: user.user_id });
-      socket.to(socketId.rows[0].socket_id).emit("User is Online");
+      socket.to(socketId.rows[0].socket_id).emit("User-Online");
     });
   });
   socket.on("Message-Sent", async (message, user_id) => {
@@ -63,12 +63,25 @@ io.on("connection", async (socket) => {
     const anotherSocketId = await Get_SocketId_By_UserId({ user_id: user_id });
     socket.to(anotherSocketId.rows[0].socket_id).emit("Message-Receive", { data: message });
   });
+  socket.on("Message-Edited", async (user_id) => {
+    const anotherSocketId = await Get_SocketId_By_UserId({ user_id: user_id });
+    socket.to(anotherSocketId.rows[0].socket_id).emit("Message-Edited");
+  });
+  socket.on("User-Typing", async (user_id) => {
+    const anotherSocketId = await Get_SocketId_By_UserId({ user_id: user_id });
+    socket.to(anotherSocketId.rows[0].socket_id).emit("User-Typing");
+  });
+  socket.on("User-Not-Typing", async (user_id) => {
+    const anotherSocketId = await Get_SocketId_By_UserId({ user_id: user_id });
+    socket.to(anotherSocketId.rows[0].socket_id).emit("User-Not-Typing");
+  });
 
   socket.on("disconnect", async () => {
     const disconnectedUserId = await Get_UserId_By_Socket({
       socket_id: socket.id,
     });
     if (disconnectedUserId.rows.length) {
+      // console.log("Disconnected",disconnectedUserId.rows)
       const SendOfflineMessageToUsers = await Get_Friends_UserId({ user_id: disconnectedUserId.rows[0].user_id });
       await UpdateUserOnlineStatus({
         user_id: disconnectedUserId.rows[0].user_id,
@@ -77,7 +90,7 @@ io.on("connection", async (socket) => {
       });
       SendOfflineMessageToUsers.rows.map(async (user) => {
         const socketId = await Get_SocketId_By_UserId({ user_id: user.user_id });
-        socket.to(socketId.rows[0].socket_id).emit("User is Offline");
+        socket.to(socketId.rows[0].socket_id).emit("User-Offline");
       });
     }
   });

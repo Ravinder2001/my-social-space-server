@@ -41,9 +41,12 @@ module.exports = {
   Get_Friends_UserId:({user_id})=>{
     return new Promise(function (resolve, reject) {
       try {
-        const response = client.query(`SELECT room_members.user_id FROM message_room 
+        const response = client.query(`
+        SELECT room_members.user_id FROM message_room 
         LEFT JOIN room_members ON room_members.room_id=message_room.id 
-        WHERE room_members.user_id !=$1`, [user_id]);
+        LEFT JOIN user_online_status ON user_online_status.user_id=room_members.user_id
+        WHERE room_members.user_id != $1 AND user_online_status.status='online'
+        `, [user_id]);
         resolve(response);
       } catch (err) {
         reject(err);

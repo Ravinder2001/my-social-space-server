@@ -11,9 +11,6 @@ if (process.env.NODE_ENV === "production") {
     port: port,
     password: password,
     database: database,
-    ssl: {
-      rejectUnauthorized: false, // You should enable SSL for production
-    },
   });
 } else {
   // Development or other environments

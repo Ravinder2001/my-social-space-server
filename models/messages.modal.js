@@ -202,21 +202,21 @@ module.exports = {
       }
     });
   },
-  UpdateSeenMessage: ({ room_id, user_id, time, id }) => {
+  UpdateSeenMessage: ({ room_id, user_id, timestamp, id }) => {
     return new Promise(function (resolve, reject) {
       try {
         const response = client.query(
           `WITH upsert AS (
           UPDATE message_seen
-          SET message_id=$3
+          SET message_id=$3,seen_at=$4
           WHERE room_id = $1 AND user_id = $2
           RETURNING *
         )
-        INSERT INTO message_seen (room_id, user_id,message_id)
-        SELECT $1, $2,$3
+        INSERT INTO message_seen (room_id, user_id,message_id,seen_at)
+        SELECT $1, $2,$3,$4
         WHERE NOT EXISTS (SELECT 1 FROM upsert)
         `,
-          [room_id, user_id, id]
+          [room_id, user_id, id, timestamp]
         );
         resolve(response);
       } catch (err) {

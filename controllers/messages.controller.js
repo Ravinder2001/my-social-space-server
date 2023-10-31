@@ -177,7 +177,8 @@ module.exports = {
   },
   Update_Seen_Message: async (req, res) => {
     try {
-      const responses = await UpdateSeenMessage({ room_id: req.body.room_id, user_id: req.customData, id: req.body.id });
+      let time=moment()
+      const responses = await UpdateSeenMessage({ room_id: req.body.room_id, user_id: req.customData, id: req.body.id, timestamp: time.format() });
 
       return res.status(Success).json({ status: Success });
     } catch (err) {

@@ -142,7 +142,7 @@ CREATE TABLE message_seen (
     id SERIAL PRIMARY KEY,
     room_id VARCHAR(255) NOT NULL,
     user_id VARCHAR(255) NOT NULL,
-    seen_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    seen_at VARCHAR(100),
     message_id INTEGER,
     FOREIGN KEY (room_id) REFERENCES message_room(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,

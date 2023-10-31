@@ -16,13 +16,12 @@ const initSocket = (server, onlineUsers) => {
     global.chatSocket = socket;
 
     socket.on("Add-User", async (userId) => {
-      console.log("User added")
+      console.log("User added");
       onlineUsers.set(userId, socket.id);
       await Add_User({ user_id: userId, socket_id: socket.id });
       await UpdateUserOnlineStatus({
         user_id: userId,
-        status: "online",
-        room_id: null,
+        status: 1,
       });
     });
     socket.on("Message-Sent", async (message, user_id) => {
@@ -37,8 +36,7 @@ const initSocket = (server, onlineUsers) => {
       if (disconnectedUserId.rows.length)
         await UpdateUserOnlineStatus({
           user_id: disconnectedUserId.rows[0].user_id,
-          status: "offline",
-          room_id: null,
+          status:0
         });
     });
   });

@@ -45,7 +45,7 @@ module.exports = {
         SELECT room_members.user_id FROM message_room 
         LEFT JOIN room_members ON room_members.room_id=message_room.id 
         LEFT JOIN user_online_status ON user_online_status.user_id=room_members.user_id
-        WHERE room_members.user_id != $1 AND user_online_status.status='online'
+        WHERE room_members.user_id != $1 AND user_online_status.status=true
         `, [user_id]);
         resolve(response);
       } catch (err) {

@@ -47,8 +47,7 @@ io.on("connection", async (socket) => {
     await Add_Socket_User({ user_id: userId, socket_id: socket.id });
     await UpdateUserOnlineStatus({
       user_id: userId,
-      status: "online",
-      room_id: null,
+      status: 1,
     });
 
     const SendOnlineMessageToUsers = await Get_Friends_UserId({ user_id: userId });
@@ -89,8 +88,7 @@ io.on("connection", async (socket) => {
       const SendOfflineMessageToUsers = await Get_Friends_UserId({ user_id: disconnectedUserId.rows[0].user_id });
       await UpdateUserOnlineStatus({
         user_id: disconnectedUserId.rows[0].user_id,
-        status: "offline",
-        room_id: null,
+        status:0
       });
       SendOfflineMessageToUsers.rows.map(async (user) => {
         const socketId = await Get_SocketId_By_UserId({ user_id: user.user_id });

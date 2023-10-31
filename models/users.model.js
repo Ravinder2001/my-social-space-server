@@ -218,7 +218,7 @@ module.exports = {
     return new Promise((resolve, reject) => {
       try {
         const response = client.query(
-          `INSERT INTO user_online_status(user_id,status,timestamp,room_id) VALUES($1,'online',CURRENT_TIMESTAMP,null)`,
+          `INSERT INTO user_online_status(user_id) VALUES($1)`,
           [user_id]
         );
         resolve(response);
@@ -227,12 +227,12 @@ module.exports = {
       }
     });
   },
-  UpdateUserOnlineStatus: ({ user_id, status,room_id }) => {
+  UpdateUserOnlineStatus: ({ user_id, status }) => {
     return new Promise((resolve, reject) => {
       try {
         const response = client.query(
-          `UPDATE user_online_status SET status=$2,timestamp=CURRENT_TIMESTAMP,room_id=$3 WHERE user_id =$1`,
-          [user_id, status,room_id]
+          `UPDATE user_online_status SET status=$2,timestamp=CURRENT_TIMESTAMP WHERE user_id =$1`,
+          [user_id, status]
         );
         resolve(response);
       } catch (err) {
@@ -244,7 +244,7 @@ module.exports = {
     return new Promise((resolve, reject) => {
       try {
         const response = client.query(
-          `SELECT status,timestamp,room_id FROM user_online_status WHERE user_id =$1`,
+          `SELECT status,timestamp FROM user_online_status WHERE user_id =$1`,
           [user_id]
         );
         resolve(response);

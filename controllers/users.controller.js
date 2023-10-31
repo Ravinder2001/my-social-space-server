@@ -321,7 +321,6 @@ module.exports = {
       await UpdateUserOnlineStatus({
         user_id: req.customData,
         status: req.params.status,
-        room_id: req.body.room_id,
       });
 
       return res.status(Success).json({

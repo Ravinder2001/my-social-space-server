@@ -11,6 +11,8 @@ const {
   UpdateMessageSeenTime,
   UpdateMessageContent,
   UpdateMessageStatus,
+  Delete_Room_Message,
+  DeleteChatHistory,
 } = require("../models/messages.modal");
 const { Image_Link } = require("../s3_bucket.config");
 const { Bad, Success } = require("../utils/constant");
@@ -96,6 +98,7 @@ module.exports = {
     try {
       const response = await GetRoomMessages({
         room_id: req.query.room_id,
+        user_id: req.customData,
         page: req.query.page,
         messagePerPage: req.query.messagePerPage,
       });
@@ -154,6 +157,18 @@ module.exports = {
       });
 
       return res.status(Success).json({ status: Success });
+    } catch (err) {
+      res.status(Bad).json({ message: err.message, status: Bad });
+    }
+  },
+  Delete_Chat_History: async (req, res) => {
+    try {
+      const responses = await DeleteChatHistory({ room_id: req.params.room_id, user_id: req.customData });
+      if (responses.rowCount > 0) {
+        return res.status(Success).json({ status: Success });
+      } else {
+        res.status(Bad).json({ message: Something, status: Bad });
+      }
     } catch (err) {
       res.status(Bad).json({ message: err.message, status: Bad });
     }

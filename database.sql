@@ -128,3 +128,14 @@ CREATE TABLE user_socket (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT user_socket_user_id_unique UNIQUE (user_id)
 );
+
+CREATE TABLE chat_history (
+    id SERIAL PRIMARY KEY,
+    room_id VARCHAR(255) NOT NULL,
+    user_id VARCHAR(255) NOT NULL,
+    deleted_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (room_id) REFERENCES message_room(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT unique_room_user_constraint UNIQUE (room_id, user_id)
+);
+

@@ -63,6 +63,10 @@ io.on("connection", async (socket) => {
     const anotherSocketId = await Get_SocketId_By_UserId({ user_id: user_id });
     socket.to(anotherSocketId.rows[0].socket_id).emit("Message-Receive", { data: message });
   });
+  socket.on("Message-Sent-Notifications", async (message, user_id) => {
+    const anotherSocketId = await Get_SocketId_By_UserId({ user_id: user_id });
+    socket.to(anotherSocketId.rows[0].socket_id).emit("Message-Sent-Notifications", { data: message });
+  });
   socket.on("Message-Edited", async (user_id) => {
     const anotherSocketId = await Get_SocketId_By_UserId({ user_id: user_id });
     socket.to(anotherSocketId.rows[0].socket_id).emit("Message-Edited");

@@ -117,19 +117,23 @@ module.exports = {
       }
     });
   },
-  GetRoomMessages: ({ room_id, page, messagePerPage }) => {
+  GetRoomMessages: ({ room_id, user_id, page, messagePerPage }) => {
     const messagesPerPage = messagePerPage;
     const offset = page == 1 ? 0 : (page - 1) * messagesPerPage;
 
     return new Promise(function (resolve, reject) {
       try {
         const response = client.query(
-          `SELECT id, sender_id, content, content_type, created_at, status,isEdited
-            FROM messages 
-            WHERE messages.room_id = $1 
+          `SELECT messages.id, messages.content, messages.room_id, messages.sender_id, messages.created_at,messages.content_type,messages.status,messages.isedited
+          FROM messages
+          LEFT JOIN chat_history ON messages.room_id = chat_history.room_id AND chat_history.user_id= $2
+          WHERE
+              (chat_history.deleted_at IS NULL OR messages.created_at > chat_history.deleted_at)
+              AND messages.room_id = $1
+              AND (chat_history.user_id = $2 OR chat_history.user_id IS NULL)
             ORDER BY id DESC
-            LIMIT $2 OFFSET $3`,
-          [room_id, messagesPerPage, offset]
+            LIMIT $3 OFFSET $4`,
+          [room_id, user_id, messagesPerPage, offset]
         );
         resolve(response);
       } catch (err) {
@@ -169,11 +173,28 @@ module.exports = {
   UpdateMessageStatus: ({ message_id, status, user_id }) => {
     return new Promise(function (resolve, reject) {
       try {
-        console.log(message_id, status, user_id)
+        console.log(message_id, status, user_id);
         const response = client.query(
           `UPDATE messages SET status=$2
           WHERE messages.id=$1 AND messages.sender_id = $3`,
           [message_id, status, user_id]
+        );
+        resolve(response);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  },
+  DeleteChatHistory: ({ room_id, user_id }) => {
+    return new Promise(function (resolve, reject) {
+      try {
+        const response = client.query(
+          `INSERT INTO chat_history(room_id, user_id)
+        VALUES ($1, $2)
+        ON CONFLICT (room_id, user_id)
+        DO UPDATE SET deleted_at = CURRENT_TIMESTAMP
+        `,
+          [room_id, user_id]
         );
         resolve(response);
       } catch (err) {

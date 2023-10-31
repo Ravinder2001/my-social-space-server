@@ -138,4 +138,14 @@ CREATE TABLE chat_history (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT unique_room_user_constraint UNIQUE (room_id, user_id)
 );
+CREATE TABLE message_seen (
+    id SERIAL PRIMARY KEY,
+    room_id VARCHAR(255) NOT NULL,
+    user_id VARCHAR(255) NOT NULL,
+    seen_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    message_id INTEGER,
+    FOREIGN KEY (room_id) REFERENCES message_room(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (message_id) REFERENCES messages(id) ON DELETE CASCADE
+);
 

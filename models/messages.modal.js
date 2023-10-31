@@ -202,4 +202,36 @@ module.exports = {
       }
     });
   },
+  UpdateSeenMessage: ({ room_id, user_id, time, id }) => {
+    return new Promise(function (resolve, reject) {
+      try {
+        const response = client.query(
+          `WITH upsert AS (
+          UPDATE message_seen
+          SET message_id=$3
+          WHERE room_id = $1 AND user_id = $2
+          RETURNING *
+        )
+        INSERT INTO message_seen (room_id, user_id,message_id)
+        SELECT $1, $2,$3
+        WHERE NOT EXISTS (SELECT 1 FROM upsert)
+        `,
+          [room_id, user_id, id]
+        );
+        resolve(response);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  },
+  GetSeenMessage: ({ room_id, user_id }) => {
+    return new Promise(function (resolve, reject) {
+      try {
+        const response = client.query(`SELECT seen_at,message_id FROM message_seen WHERE room_id=$1 AND user_id=$2`, [room_id, user_id]);
+        resolve(response);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  },
 };

@@ -1,6 +1,6 @@
 const { Bad } = require("../../../utils/constant");
 const { Something } = require("../../../utils/message");
-const { validate_room_body, validate_message_body, validate_updateMessageContent, validate_updateMessageStatus } = require("./validation");
+const { validate_room_body, validate_message_body, validate_updateMessageContent, validate_updateMessageStatus, validate_updateSeenMsg, validate_getSeenMsg } = require("./validation");
 
 module.exports = {
   Messages_Validations: {
@@ -33,6 +33,24 @@ module.exports = {
     },
     UpdateMessageStatus: (req, res, next) => {
       const { error } = validate_updateMessageStatus(req.body);
+      if (error) {
+        return res
+          .status(Bad)
+          .json({ message: error.details[0].message, status: Bad });
+      }
+      return next();
+    },
+    UpdateMessageSeen: (req, res, next) => {
+      const { error } = validate_updateSeenMsg(req.body);
+      if (error) {
+        return res
+          .status(Bad)
+          .json({ message: error.details[0].message, status: Bad });
+      }
+      return next();
+    },
+    GetMessageSeen: (req, res, next) => {
+      const { error } = validate_getSeenMsg(req.body);
       if (error) {
         return res
           .status(Bad)

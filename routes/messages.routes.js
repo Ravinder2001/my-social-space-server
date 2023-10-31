@@ -11,6 +11,8 @@ const {
   Update_Message_Status,
   Delete_Room_Messages,
   Delete_Chat_History,
+  Update_Seen_Message,
+  Get_Seen_Message,
 } = require("../controllers/messages.controller");
 const { Messages_Validations } = require("../helpers/body_validations/messages/validator");
 const router = express.Router();
@@ -24,4 +26,6 @@ router.get("/updateMessageSeenTime/:room_id", authentication, Update_Message_See
 router.put("/updateMessageContent", authentication, Messages_Validations.UpdateMessageContent, Update_Message_Content);
 router.put("/updateMessageStatus", authentication, Messages_Validations.UpdateMessageStatus, Update_Message_Status);
 router.delete("/deleteChatHistory/:room_id", authentication, Delete_Chat_History);
+router.post("/updateSeenMessage", authentication, Messages_Validations.UpdateMessageSeen, Update_Seen_Message);
+router.post("/getSeenMessage", authentication, Messages_Validations.GetMessageSeen, Get_Seen_Message);
 module.exports = router;

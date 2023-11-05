@@ -1,10 +1,10 @@
 const express = require("express");
 const authentication = require("../helpers/JWT/authentication");
 const { Add_Story, Delete_Story, Get_All_Story } = require("../controllers/story.controller");
-const { Story_Validations } = require("../helpers/body_validations/Story/validator");
 const { File_Extension } = require("../utils/constant");
 const router = express.Router();
 const multer = require("multer");
+const { Story_Validations } = require("../helpers/body_validations/story/validator");
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 

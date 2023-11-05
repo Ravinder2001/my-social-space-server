@@ -148,4 +148,14 @@ CREATE TABLE message_seen (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (message_id) REFERENCES messages(id) ON DELETE CASCADE
 );
+CREATE TABLE story (
+    id SERIAL PRIMARY KEY,
+    user_id VARCHAR(255) NOT NULL,
+    image_url VARCHAR(255) NOT NULL,
+    song VARCHAR(255) NOT NULL,
+    start_time INTEGER,
+    end_time INTEGER,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
 

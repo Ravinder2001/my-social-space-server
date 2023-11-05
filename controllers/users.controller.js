@@ -121,7 +121,7 @@ module.exports = {
         location: req.body.location,
       });
       if (profileDataRes.rowCount > 0) {
-        req.file.originalname = user + ".jpeg";
+        req.file.originalname = user + ".png";
         const Key = `ProfilePictures/${user}/${req.file.originalname}`;
         const Params = {
           Bucket: bucket_name,

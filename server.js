@@ -10,12 +10,21 @@ const Authentication_Routes = require("./routes/users.routes");
 const Post_Routes = require("./routes/post.routes");
 const Friends_Routes = require("./routes/friends.routes");
 const Messages_Routes = require("./routes/messages.routes");
+const Story_Routes = require("./routes/story.routes");
+
 const { Get_UserId_By_Socket, Get_SocketId_By_UserId, Add_Socket_User, Get_Friends_UserId } = require("./models/socket.modal");
 const { UpdateUserOnlineStatus } = require("./models/users.model");
+const { default: rateLimit } = require("express-rate-limit");
 
+const limiter = rateLimit({
+  windowMs: 1 * 60 * 1000,
+  limit: 50,
+});
+
+app.use(limiter);
 app.use(
   cors({
-    origin: process.env.NODE_ENV === "production" ? [config.domain, config.localhost_domain] : [config.domain],
+    origin: "*",
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
@@ -25,6 +34,7 @@ app.use("/", Authentication_Routes);
 app.use("/post", Post_Routes);
 app.use("/friends", Friends_Routes);
 app.use("/messages", Messages_Routes);
+app.use("/story", Story_Routes);
 
 const server = app.listen(PORT, () => {
   console.log(`Server is running on Port ${PORT}`);
@@ -33,7 +43,7 @@ const server = app.listen(PORT, () => {
 const io = new Server(server, {
   cors: {
     credentials: true,
-    origin: process.env.NODE_ENV === "production" ? [config.domain, config.localhost_domain] : [config.domain],
+    origin: "*",
   },
 });
 const onlineUsers = new Map();
@@ -88,7 +98,7 @@ io.on("connection", async (socket) => {
       const SendOfflineMessageToUsers = await Get_Friends_UserId({ user_id: disconnectedUserId.rows[0].user_id });
       await UpdateUserOnlineStatus({
         user_id: disconnectedUserId.rows[0].user_id,
-        status:0
+        status: 0,
       });
       SendOfflineMessageToUsers.rows.map(async (user) => {
         const socketId = await Get_SocketId_By_UserId({ user_id: user.user_id });

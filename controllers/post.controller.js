@@ -48,7 +48,7 @@ module.exports = {
         visibility: req.body.visibility,
       });
       const imageUploadPromises = images.map(async (image, index) => {
-        image.originalname = `image_${index + 1}` + ".jpeg";
+        image.originalname = `image_${index + 1}` + ".png";
         const Key = `Posts/${user_id}/${post_id}/${image.originalname}`;
         const params = {
           Bucket: bucket_name,

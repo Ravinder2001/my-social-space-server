@@ -1,5 +1,5 @@
 const { PutObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3");
-const { AddStory, DeleteStory, FindStoryById, GetAllStory } = require("../models/story.modal");
+const { AddStory, DeleteStory, FindStoryById, GetAllStory, FindStoryByUserId } = require("../models/story.modal");
 const { s3, Image_Link } = require("../s3_bucket.config");
 const { bucket_name } = require("../utils/config");
 const { Bad, Success, SuccessWithNoContent } = require("../utils/constant");
@@ -80,6 +80,23 @@ module.exports = {
         );
       }
 
+      return res.status(Success).json({
+        status: Success,
+        data: response.rows,
+      });
+    } catch (err) {
+      res.status(Bad).json({ message: err.message, status: Bad });
+    }
+  },
+  Find_Story_By_UserId: async (req, res) => {
+    try {
+      const response = await FindStoryByUserId({ user_id: req.params.user_id });
+      await Promise.all(
+        response.rows.map(async (story) => {
+          let story_url = await Image_Link(story.story_image);
+          story.story_image = story_url;
+        })
+      );
       return res.status(Success).json({
         status: Success,
         data: response.rows,

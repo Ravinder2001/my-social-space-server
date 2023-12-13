@@ -14,21 +14,24 @@ const Story_Routes = require("./routes/story.routes");
 
 const { Get_UserId_By_Socket, Get_SocketId_By_UserId, Add_Socket_User, Get_Friends_UserId } = require("./models/socket.modal");
 const { UpdateUserOnlineStatus } = require("./models/users.model");
-const { default: rateLimit } = require("express-rate-limit");
+const rateLimit = require("express-rate-limit");
+const { GetFriendsIdByPostId, GetPostWithPostId } = require("./models/post.modal");
 
 const limiter = rateLimit({
   windowMs: 1 * 60 * 1000,
-  limit: 50,
+  limit: 100,
 });
 
-app.use(limiter);
+// app.use(limiter);
 app.use(
   cors({
-    origin: "*",
+    origin: ["http://localhost:4545"],
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
+    optionsSuccessStatus: 204, // This is the status code for successful preflight requests
   })
 );
+
 app.use(express.json());
 app.use("/", Authentication_Routes);
 app.use("/post", Post_Routes);
@@ -87,6 +90,15 @@ io.on("connection", async (socket) => {
   socket.on("User-Not-Typing", async (user_id) => {
     const anotherSocketId = await Get_SocketId_By_UserId({ user_id: user_id });
     socket.to(anotherSocketId.rows[0].socket_id).emit("User-Not-Typing");
+  });
+  socket.on("Like-Toogle", async (post_id) => {
+    const SendOnlineAlertToUsers = await GetFriendsIdByPostId({ post_id });
+    const admin_Id = await GetPostWithPostId({ post_id });
+    SendOnlineAlertToUsers.rows.push({friend_id:admin_Id.rows[0].user_id})
+    SendOnlineAlertToUsers.rows.map(async (user) => {
+      const socketId = await Get_SocketId_By_UserId({ user_id: user.friend_id });
+      socket.to(socketId.rows[0].socket_id).emit("Like-Toogle");
+    });
   });
 
   socket.on("disconnect", async () => {

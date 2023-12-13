@@ -37,6 +37,16 @@ module.exports = {
       }
     });
   },
+  FindStoryByUserId: ({ user_id }) => {
+    return new Promise(function (resolve, reject) {
+      try {
+        const response = client.query(`SELECT id,image_url as story_image,song,start_time,end_time,created_at FROM story WHERE user_id=$1`, [user_id]);
+        resolve(response);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  },
   GetAllStory: ({ user_id }) => {
     return new Promise(function (resolve, reject) {
       try {

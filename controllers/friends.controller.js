@@ -72,8 +72,10 @@ module.exports = {
       const response = await GetFriendRequestList({ user_id: req.customData });
       await Promise.all(
         response.rows.map(async (image) => {
-          let url = await Image_Link(image.image_url);
-          image.image_url = url;
+          if (image.image_url) {
+            let url = await Image_Link(image.image_url);
+            image.image_url = url;
+          }
         })
       );
       res.status(Success).json({ data: response.rows, status: Success });

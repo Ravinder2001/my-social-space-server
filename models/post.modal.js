@@ -4,10 +4,7 @@ module.exports = {
   AddPost: ({ id, user_id, caption }) => {
     return new Promise(function (resolve, reject) {
       try {
-        const response = client.query(
-          `INSERT INTO posts(id,user_id,caption) VALUES ($1,$2,$3)`,
-          [id, user_id, caption]
-        );
+        const response = client.query(`INSERT INTO posts(id,user_id,caption) VALUES ($1,$2,$3)`, [id, user_id, caption]);
         resolve(response);
       } catch (err) {
         reject(err);
@@ -17,10 +14,7 @@ module.exports = {
   AddPostImages: ({ post_id, image }) => {
     return new Promise(function (resolve, reject) {
       try {
-        const response = client.query(
-          `INSERT INTO post_images (post_id,image_url) VALUES($1,$2)`,
-          [post_id, image]
-        );
+        const response = client.query(`INSERT INTO post_images (post_id,image_url) VALUES($1,$2)`, [post_id, image]);
         resolve(response);
       } catch (err) {
         reject(err);
@@ -165,10 +159,7 @@ module.exports = {
   DeletePost: ({ post_id, user_id }) => {
     return new Promise(function (resolve, reject) {
       try {
-        const response = client.query(
-          `DELETE FROM posts WHERE id=$1 AND user_id=$2`,
-          [post_id, user_id]
-        );
+        const response = client.query(`DELETE FROM posts WHERE id=$1 AND user_id=$2`, [post_id, user_id]);
         resolve(response);
       } catch (err) {
         reject(err);
@@ -178,10 +169,7 @@ module.exports = {
   AddComment: ({ post_id, user_id, content }) => {
     return new Promise(function (resolve, reject) {
       try {
-        const response = client.query(
-          `INSERT INTO comments(post_id,user_id,content) VALUES($1,$2,$3)`,
-          [post_id, user_id, content]
-        );
+        const response = client.query(`INSERT INTO comments(post_id,user_id,content) VALUES($1,$2,$3)`, [post_id, user_id, content]);
         resolve(response);
       } catch (err) {
         reject(err);
@@ -191,10 +179,7 @@ module.exports = {
   AddLike: ({ post_id, user_id }) => {
     return new Promise(function (resolve, reject) {
       try {
-        const response = client.query(
-          `INSERT INTO likes(post_id,user_id) VALUES($1,$2)`,
-          [post_id, user_id]
-        );
+        const response = client.query(`INSERT INTO likes(post_id,user_id) VALUES($1,$2)`, [post_id, user_id]);
         resolve(response);
       } catch (err) {
         reject(err);
@@ -204,10 +189,7 @@ module.exports = {
   RemoveLike: ({ post_id, user_id }) => {
     return new Promise(function (resolve, reject) {
       try {
-        const response = client.query(
-          `DELETE FROM likes WHERE post_id=$1 AND user_id=$2`,
-          [post_id, user_id]
-        );
+        const response = client.query(`DELETE FROM likes WHERE post_id=$1 AND user_id=$2`, [post_id, user_id]);
         resolve(response);
       } catch (err) {
         reject(err);
@@ -251,9 +233,7 @@ module.exports = {
   RemoveComment: ({ comment_id }) => {
     return new Promise((resolve, reject) => {
       try {
-        const response = client.query(`DELETE FROM comments WHERE id=$1`, [
-          comment_id,
-        ]);
+        const response = client.query(`DELETE FROM comments WHERE id=$1`, [comment_id]);
         resolve(response);
       } catch (err) {
         reject(err);
@@ -285,23 +265,14 @@ module.exports = {
   EditPostCaption: ({ post_id, caption }) => {
     return new Promise((resolve, reject) => {
       try {
-        const response = client.query(
-          `UPDATE posts SET caption=$2 WHERE id=$1`,
-          [post_id, caption]
-        );
+        const response = client.query(`UPDATE posts SET caption=$2 WHERE id=$1`, [post_id, caption]);
         resolve(response);
       } catch (err) {
         reject(err);
       }
     });
   },
-  EditPostPrivacy: ({
-    post_id,
-    comment_allowed,
-    like_allowed,
-    share_allowed,
-    visibility,
-  }) => {
+  EditPostPrivacy: ({ post_id, comment_allowed, like_allowed, share_allowed, visibility }) => {
     return new Promise((resolve, reject) => {
       try {
         const response = client.query(
@@ -309,6 +280,39 @@ module.exports = {
           WHERE post_id=$1`,
           [post_id, comment_allowed, like_allowed, share_allowed, visibility]
         );
+        resolve(response);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  },
+  GetLikesCount: ({ post_id }) => {
+    return new Promise((resolve, reject) => {
+      try {
+        const response = client.query(`SELECT user_id FROM likes WHERE post_id=$1`, [post_id]);
+        resolve(response);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  },
+  GetFriendsIdByPostId: ({ post_id }) => {
+    return new Promise((resolve, reject) => {
+      try {
+        const response = client.query(`
+        WITH PostUser AS (
+          SELECT user_id
+          FROM posts
+          WHERE id = $1
+        )
+        SELECT DISTINCT 
+          CASE 
+              WHEN friends.user1_id = PostUser.user_id THEN friends.user2_id
+              ELSE friends.user1_id
+          END AS friend_id
+        FROM friends
+        JOIN PostUser ON friends.user1_id = PostUser.user_id OR friends.user2_id = PostUser.user_id;
+      `, [post_id]);
         resolve(response);
       } catch (err) {
         reject(err);

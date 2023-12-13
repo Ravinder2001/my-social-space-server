@@ -1,9 +1,4 @@
-const {
-  Success,
-  Bad,
-  Image_Exp_Duration,
-  Invalid_User,
-} = require("../utils/constant");
+const { Success, Bad, Image_Exp_Duration, Invalid_User } = require("../utils/constant");
 const { bucket_name } = require("../utils/config");
 const { PutObjectCommand } = require("@aws-sdk/client-s3");
 const { s3, Image_Link } = require("../s3_bucket.config");
@@ -26,12 +21,10 @@ const {
   AddPostPrivacy,
   EditPostPrivacy,
   EditPostCaption,
+  GetLikesCount,
 } = require("../models/post.modal");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
-const {
-  getImageUrls,
-  getImageDimensions,
-} = require("../helpers/Reusable.function");
+const { getImageUrls, getImageDimensions } = require("../helpers/Reusable.function");
 module.exports = {
   Add_Post: async (req, res) => {
     try {
@@ -65,9 +58,7 @@ module.exports = {
 
       await Promise.all(imageUploadPromises);
 
-      return res
-        .status(Success)
-        .json({ message: "Post created successfully", status: Success });
+      return res.status(Success).json({ message: "Post created successfully", status: Success });
     } catch (err) {
       res.status(Bad).json({ message: err.message, status: Bad });
     }
@@ -201,10 +192,7 @@ module.exports = {
           } else {
             comment.image_url = Invalid_User;
           }
-          if (
-            comment.user_id == req.customData ||
-            comment.post_admin == req.customData
-          ) {
+          if (comment.user_id == req.customData || comment.post_admin == req.customData) {
             comment.editable = true;
           } else {
             comment.editable = false;
@@ -245,7 +233,7 @@ module.exports = {
       res.status(Bad).json({ message: err.message, status: Bad });
     }
   },
-  Edit_Post: async (req,res) => {
+  Edit_Post: async (req, res) => {
     try {
       EditPostCaption({
         post_id: req.params.post_id,
@@ -259,23 +247,19 @@ module.exports = {
         visibility: req.body.visibility,
       });
 
-      res
-        .status(Success)
-        .json({ message: "Post Edited Succesfully", status: Success });
+      res.status(Success).json({ message: "Post Edited Succesfully", status: Success });
     } catch (err) {
       res.status(Bad).json({ message: err.message, status: Bad });
     }
   },
-  Delete_Post: async (req,res) => {
+  Delete_Post: async (req, res) => {
     try {
       const response = await DeletePost({
         post_id: req.params.post_id,
         user_id: req.customData,
       });
       if (response.rowCount > 0) {
-        res
-          .status(Success)
-          .json({ message: "Post Deleted Succesfully", status: Success });
+        res.status(Success).json({ message: "Post Deleted Succesfully", status: Success });
       }
     } catch (err) {
       res.status(Bad).json({ message: err.message, status: Bad });
@@ -324,9 +308,7 @@ module.exports = {
     try {
       const post = await GetPostWithPostId({ post_id: req.params.post_id });
       if (post.rows.length) {
-        const user_profile_picture = await Image_Link(
-          post.rows[0].profile_picture
-        );
+        const user_profile_picture = await Image_Link(post.rows[0].profile_picture);
         post.rows[0].profile_picture = user_profile_picture;
 
         const postImageRes = post.rows[0].images.map(async (image) => {
@@ -344,9 +326,7 @@ module.exports = {
           post.rows[0].share_allowed = true;
         }
         delete post.rows[0].user_id;
-        return res
-          .status(Success)
-          .json({ data: post.rows[0], status: Success });
+        return res.status(Success).json({ data: post.rows[0], status: Success });
       }
       return res.status(Success).json({ data: null, status: Success });
     } catch (err) {
@@ -376,9 +356,32 @@ module.exports = {
         })
       );
 
-      return res
-        .status(Success)
-        .json({ data: response.rows[0], status: Success });
+      return res.status(Success).json({ data: response.rows[0], status: Success });
+    } catch (err) {
+      res.status(Bad).json({ message: err.message, status: Bad });
+    }
+  },
+  Get_Likes_Count: async (req, res) => {
+    try {
+      const response = await GetLikesCount({
+        post_id: req.params.post_id,
+      });
+      let user_like=0
+      await Promise.all(
+        response.rows.map(async (image) => {
+          if (image.user_id == req.customData) {
+            user_like = 1;
+          }
+        })
+      );
+
+      return res.status(Success).json({
+        data: {
+          count: response.rows.length,
+          user_like: user_like,
+        },
+        status: Success,
+      });
     } catch (err) {
       res.status(Bad).json({ message: err.message, status: Bad });
     }

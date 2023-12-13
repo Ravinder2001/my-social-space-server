@@ -25,7 +25,7 @@ const limiter = rateLimit({
 // app.use(limiter);
 app.use(
   cors({
-    origin: ["http://localhost:4545"],
+    origin:"*",
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
     optionsSuccessStatus: 204, // This is the status code for successful preflight requests

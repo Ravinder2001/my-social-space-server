@@ -27,10 +27,10 @@ module.exports = {
       }
     });
   },
-  FindStoryById: ({ story_id }) => {
+  FindStoryById: ({ story_id,user_id }) => {
     return new Promise(function (resolve, reject) {
       try {
-        const response = client.query(`SELECT image_url FROM story WHERE id=$1`, [story_id]);
+        const response = client.query(`SELECT image_url FROM story WHERE id=$1 AND user_id=$2`, [story_id,user_id]);
         resolve(response);
       } catch (err) {
         reject(err);

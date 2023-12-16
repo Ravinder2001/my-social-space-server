@@ -11,21 +11,24 @@ const Post_Routes = require("./routes/post.routes");
 const Friends_Routes = require("./routes/friends.routes");
 const Messages_Routes = require("./routes/messages.routes");
 const Story_Routes = require("./routes/story.routes");
+const Notifications_Routes = require("./routes/notifications.routes");
 
 const { Get_UserId_By_Socket, Get_SocketId_By_UserId, Add_Socket_User, Get_Friends_UserId } = require("./models/socket.modal");
 const { UpdateUserOnlineStatus } = require("./models/users.model");
 const rateLimit = require("express-rate-limit");
-const { GetFriendsIdByPostId, GetPostWithPostId } = require("./models/post.modal");
+const { GetFriendsIdByPostId, GetPostWithPostId, GetUserIdByPostId } = require("./models/post.modal");
+const { CreateNotifications } = require("./models/Notifications.modal");
+const { PostLikeNotification, PostCommentNotification } = require("./utils/Notifications");
 
 const limiter = rateLimit({
   windowMs: 1 * 60 * 1000,
-  limit: 100,
+  limit: 50,
 });
 
 // app.use(limiter);
 app.use(
   cors({
-    origin:"*",
+    origin: "*",
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
     optionsSuccessStatus: 204, // This is the status code for successful preflight requests
@@ -38,6 +41,7 @@ app.use("/post", Post_Routes);
 app.use("/friends", Friends_Routes);
 app.use("/messages", Messages_Routes);
 app.use("/story", Story_Routes);
+app.use("/notifications", Notifications_Routes);
 
 const server = app.listen(PORT, () => {
   console.log(`Server is running on Port ${PORT}`);
@@ -91,14 +95,37 @@ io.on("connection", async (socket) => {
     const anotherSocketId = await Get_SocketId_By_UserId({ user_id: user_id });
     socket.to(anotherSocketId.rows[0].socket_id).emit("User-Not-Typing");
   });
-  socket.on("Like-Toogle", async (post_id) => {
+  socket.on("Like-Toogle", async ({ post_id, isLiked, UserName, UserId, image }) => {
     const SendOnlineAlertToUsers = await GetFriendsIdByPostId({ post_id });
     const admin_Id = await GetPostWithPostId({ post_id });
-    SendOnlineAlertToUsers.rows.push({friend_id:admin_Id.rows[0].user_id})
+    SendOnlineAlertToUsers.rows.push({ friend_id: admin_Id.rows[0].user_id });
     SendOnlineAlertToUsers.rows.map(async (user) => {
       const socketId = await Get_SocketId_By_UserId({ user_id: user.friend_id });
       socket.to(socketId.rows[0].socket_id).emit("Like-Toogle");
     });
+    if (isLiked && UserId != admin_Id.rows[0].user_id) {
+      await CreateNotifications({
+        user_id: admin_Id.rows[0].user_id,
+        notification_type: "like",
+        message: `${UserName} ${PostLikeNotification}`,
+        image,
+      });
+      const socketId = await Get_SocketId_By_UserId({ user_id: admin_Id.rows[0].user_id });
+      socket.to(socketId.rows[0].socket_id).emit("Notification");
+    }
+  });
+  socket.on("Comment-Notifications", async ({ post_id, UserName, UserId, image }) => {
+    const admin_Id = await GetPostWithPostId({ post_id });
+    if (UserId != admin_Id.rows[0].user_id) {
+      await CreateNotifications({
+        user_id: admin_Id.rows[0].user_id,
+        notification_type: "comment",
+        message: `${UserName} ${PostCommentNotification}`,
+        image,
+      });
+      const socketId = await Get_SocketId_By_UserId({ user_id: admin_Id.rows[0].user_id });
+      socket.to(socketId.rows[0].socket_id).emit("Notification");
+    }
   });
 
   socket.on("disconnect", async () => {

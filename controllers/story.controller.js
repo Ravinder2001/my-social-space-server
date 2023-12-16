@@ -33,7 +33,7 @@ module.exports = {
   },
   Delete_Story: async (req, res) => {
     try {
-      const image_res = await FindStoryById({ story_id: req.params.story_id });
+      const image_res = await FindStoryById({ story_id: req.params.story_id,user_id: req.customData});
       if (image_res.rows.length) {
         const params = {
           Bucket: bucket_name,

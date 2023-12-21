@@ -45,13 +45,13 @@ app.use("/messages", Messages_Routes);
 app.use("/story", Story_Routes);
 app.use("/notifications", Notifications_Routes);
 
-cron.schedule("* * * * * *", () => {
-  console.log("Printing to console every 5 seconds!");
-},{
-  scheduled:true,
-  timezone:"Asia/Kolkata",
+// cron.schedule("* * * * * *", () => {
+//   console.log("Printing to console every 5 seconds!");
+// },{
+//   scheduled:true,
+//   timezone:"Asia/Kolkata",
 
-});
+// });
 
 const server = app.listen(PORT, () => {
   console.log(`Server is running on Port ${PORT}`);

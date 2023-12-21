@@ -1,4 +1,6 @@
 const express = require("express");
+const cron = require("node-cron");
+
 const app = express();
 const { Server } = require("socket.io");
 const cors = require("cors");
@@ -25,7 +27,7 @@ const limiter = rateLimit({
   limit: 50,
 });
 
-// app.use(limiter);
+app.use(limiter);
 app.use(
   cors({
     origin: "*",
@@ -42,6 +44,14 @@ app.use("/friends", Friends_Routes);
 app.use("/messages", Messages_Routes);
 app.use("/story", Story_Routes);
 app.use("/notifications", Notifications_Routes);
+
+cron.schedule("* * * * * *", () => {
+  console.log("Printing to console every 5 seconds!");
+},{
+  scheduled:true,
+  timezone:"Asia/Kolkata",
+
+});
 
 const server = app.listen(PORT, () => {
   console.log(`Server is running on Port ${PORT}`);

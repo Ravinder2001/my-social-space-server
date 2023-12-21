@@ -25,6 +25,8 @@ const post_body = Joi.object({
   like: Joi.string().min(0).max(1).required(),
   share: Joi.string().min(0).max(1).required(),
   visibility: Joi.string().min(0).max(10).required(),
+  uploadAt: Joi.string().required(),
+  uploadTill: Joi.string().required(),
   image: Joi.array().items({
     caption: Joi.string().max(255),
     fieldname: Joi.string().required(),

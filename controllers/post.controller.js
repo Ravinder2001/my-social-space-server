@@ -28,6 +28,8 @@ const { getImageUrls, getImageDimensions } = require("../helpers/Reusable.functi
 module.exports = {
   Add_Post: async (req, res) => {
     try {
+      console.log(req.body);
+      return;
       const post_id = uuidv4();
       const user_id = req.customData;
       const caption = req.body.caption;
@@ -366,7 +368,7 @@ module.exports = {
       const response = await GetLikesCount({
         post_id: req.params.post_id,
       });
-      let user_like=0
+      let user_like = 0;
       await Promise.all(
         response.rows.map(async (image) => {
           if (image.user_id == req.customData) {

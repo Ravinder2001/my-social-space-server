@@ -1,5 +1,6 @@
 const express = require("express");
 const cron = require("node-cron");
+const morgan = require('morgan');
 
 const app = express();
 const { Server } = require("socket.io");
@@ -28,6 +29,7 @@ const limiter = rateLimit({
 });
 
 app.use(limiter);
+app.use(morgan('dev'));
 app.use(
   cors({
     origin: "*",

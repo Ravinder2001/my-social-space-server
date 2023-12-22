@@ -24,7 +24,7 @@ const { PostLikeNotification, PostCommentNotification } = require("./utils/Notif
 
 const limiter = rateLimit({
   windowMs: 1 * 60 * 1000,
-  limit: 50,
+  limit: 100,
 });
 
 app.use(limiter);

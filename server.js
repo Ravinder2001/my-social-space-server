@@ -30,7 +30,7 @@ const limiter = rateLimit({
 app.use(limiter);
 app.use(
   cors({
-    origin: [config.domain],
+    origin: "*",
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
     optionsSuccessStatus: 204, // This is the status code for successful preflight requests
@@ -45,7 +45,7 @@ app.use("/messages", Messages_Routes);
 app.use("/story", Story_Routes);
 app.use("/notifications", Notifications_Routes);
 
-cron.schedule("*/14 * * * *", () => {
+cron.schedule("*/5 * * * *", () => {
   console.log("Printing to console every 14th minute!");
 });
 

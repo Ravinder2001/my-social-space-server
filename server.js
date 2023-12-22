@@ -1,6 +1,6 @@
 const express = require("express");
 const cron = require("node-cron");
-const morgan = require('morgan');
+const morgan = require("morgan");
 
 const app = express();
 const { Server } = require("socket.io");
@@ -15,6 +15,7 @@ const Friends_Routes = require("./routes/friends.routes");
 const Messages_Routes = require("./routes/messages.routes");
 const Story_Routes = require("./routes/story.routes");
 const Notifications_Routes = require("./routes/notifications.routes");
+const GPT_Routes = require("./routes/gpt.routes");
 
 const { Get_UserId_By_Socket, Get_SocketId_By_UserId, Add_Socket_User, Get_Friends_UserId } = require("./models/socket.modal");
 const { UpdateUserOnlineStatus } = require("./models/users.model");
@@ -29,15 +30,8 @@ const limiter = rateLimit({
 });
 
 app.use(limiter);
-app.use(morgan('dev'));
-app.use(
-  cors({
-    origin: "*",
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    optionsSuccessStatus: 204, // This is the status code for successful preflight requests
-  })
-);
+app.use(morgan("dev"));
+app.use(cors());
 
 app.use(express.json());
 app.use("/", Authentication_Routes);
@@ -46,6 +40,7 @@ app.use("/friends", Friends_Routes);
 app.use("/messages", Messages_Routes);
 app.use("/story", Story_Routes);
 app.use("/notifications", Notifications_Routes);
+app.use("/GPT", GPT_Routes);
 
 cron.schedule("*/5 * * * *", () => {
   console.log("Printing to console every 14th minute!");

@@ -5,6 +5,7 @@ const {
   GetFriendRequestList,
   DeleteFriendRequest,
   DeleteFriendship,
+  GetFriendList,
 } = require("../models/friends.modal");
 const { Image_Link } = require("../s3_bucket.config");
 const { Bad, Success } = require("../utils/constant");
@@ -75,6 +76,23 @@ module.exports = {
           if (image.image_url) {
             let url = await Image_Link(image.image_url);
             image.image_url = url;
+          }
+        })
+      );
+      res.status(Success).json({ data: response.rows, status: Success });
+    } catch (err) {
+      res.status(Bad).json({ message: err.message, status: Bad });
+    }
+  },
+  Get_Friend_List: async (req, res) => {
+    try {
+      const response = await GetFriendList({ user_id: req.customData,name:req.query.name });
+      await Promise.all(
+        response.rows.map(async (image) => {
+          if (image.image_url) {
+            let url = await Image_Link(image.image_url);
+            image.profile_picture = url;
+            delete image.image_url
           }
         })
       );

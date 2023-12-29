@@ -5,23 +5,23 @@ const openai = new OpenAI();
 module.exports = {
   Generator_Caption: async (req, res) => {
     try {
-      // const completion = await openai.chat.completions.create({
-      //   messages: [
-      //     { role: "system", content: "You are caption generator assistant and your response should be inside 255 characters." },
-      //     {
-      //       role: "user",
-      //       content: `Generate a captivating caption for the following post:${req.body.post}.`,
-      //     },
-      //   ],
-      //   model: "gpt-3.5-turbo",
-      //   // max_tokens: 30,
-      // });
-
-      // res.status(Success).json({ data: completion.choices[0].message?.content, status: Success });
-      res.status(Success).json({
-        data: '"Experiencing the serene beauty of Kedarnath with my soulmates – moments that will last a lifetime! 🏔️✨ #KedarnathTrip #UnforgettableJourneys #CherishingEveryMoment"',
-        status: Success,
+      const completion = await openai.chat.completions.create({
+        messages: [
+          { role: "system", content: "You are caption generator assistant and your response should be inside 255 characters." },
+          {
+            role: "user",
+            content: `Generate a captivating caption for the following post:${req.body.post}.`,
+          },
+        ],
+        model: "gpt-3.5-turbo",
+        // max_tokens: 30,
       });
+
+      res.status(Success).json({ data: completion.choices[0].message?.content, status: Success });
+      // res.status(Success).json({
+      //   data: '"Experiencing the serene beauty of Kedarnath with my soulmates – moments that will last a lifetime! 🏔️✨ #KedarnathTrip #UnforgettableJourneys #CherishingEveryMoment"',
+      //   status: Success,
+      // });
     } catch (err) {
       res.status(Bad).json({ message: err.message, status: Bad });
     }

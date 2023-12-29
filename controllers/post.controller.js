@@ -28,8 +28,6 @@ const { getImageUrls, getImageDimensions } = require("../helpers/Reusable.functi
 module.exports = {
   Add_Post: async (req, res) => {
     try {
-      console.log(req.body);
-      return;
       const post_id = uuidv4();
       const user_id = req.customData;
       const caption = req.body.caption;

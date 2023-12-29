@@ -31,7 +31,9 @@ const limiter = rateLimit({
 
 app.use(limiter);
 app.use(morgan("dev"));
-app.use(cors());
+app.use(cors({
+  origin:"*"
+}));
 
 app.use(express.json());
 app.use("/", Authentication_Routes);
@@ -80,23 +82,35 @@ io.on("connection", async (socket) => {
     delete message.sender_id;
     message.isOwnMessage = false;
     const anotherSocketId = await Get_SocketId_By_UserId({ user_id: user_id });
-    socket.to(anotherSocketId.rows[0].socket_id).emit("Message-Receive", { data: message });
+    if (anotherSocketId.rows.length) {
+      socket.to(anotherSocketId.rows[0].socket_id).emit("Message-Receive", { data: message });
+    }
   });
   socket.on("Message-Sent-Notifications", async (message, user_id) => {
     const anotherSocketId = await Get_SocketId_By_UserId({ user_id: user_id });
-    socket.to(anotherSocketId.rows[0].socket_id).emit("Message-Sent-Notifications", { data: message });
+    if (anotherSocketId.rows.length) {
+      socket.to(anotherSocketId.rows[0].socket_id).emit("Message-Sent-Notifications", { data: message });
+    }
   });
   socket.on("Message-Edited", async (user_id) => {
     const anotherSocketId = await Get_SocketId_By_UserId({ user_id: user_id });
-    socket.to(anotherSocketId.rows[0].socket_id).emit("Message-Edited");
+    if (anotherSocketId.rows.length) {
+      socket.to(anotherSocketId.rows[0].socket_id).emit("Message-Edited");
+    }
   });
   socket.on("User-Typing", async (user_id) => {
+  
     const anotherSocketId = await Get_SocketId_By_UserId({ user_id: user_id });
-    socket.to(anotherSocketId.rows[0].socket_id).emit("User-Typing");
+    
+    if (anotherSocketId.rows.length) {
+      socket.to(anotherSocketId.rows[0].socket_id).emit("User-Typing");
+    }
   });
   socket.on("User-Not-Typing", async (user_id) => {
     const anotherSocketId = await Get_SocketId_By_UserId({ user_id: user_id });
-    socket.to(anotherSocketId.rows[0].socket_id).emit("User-Not-Typing");
+    if (anotherSocketId.rows.length) {
+      socket.to(anotherSocketId.rows[0].socket_id).emit("User-Not-Typing");
+    }
   });
   socket.on("Like-Toogle", async ({ post_id, isLiked, UserName, UserId, image }) => {
     const SendOnlineAlertToUsers = await GetFriendsIdByPostId({ post_id });

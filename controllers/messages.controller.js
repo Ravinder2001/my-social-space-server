@@ -15,6 +15,7 @@ const {
   DeleteChatHistory,
   UpdateSeenMessage,
   GetSeenMessage,
+  GetRoomMembers,
 } = require("../models/messages.modal");
 const { Image_Link } = require("../s3_bucket.config");
 const { Bad, Success } = require("../utils/constant");
@@ -28,11 +29,11 @@ module.exports = {
         id: room_id,
         type: req.body.type,
         name: req.body.type == 2 ? req.body.name : null,
-        image_url: req.body.type == 2 ? req.body.image_url : null,
       });
       let adminObject = {
         user_id: req.customData,
         isMessageAllowed: true,
+        role: "admin",
       };
       req.body.users.push(adminObject);
 
@@ -42,6 +43,7 @@ module.exports = {
             room_id,
             user_id: member.user_id,
             ismessageallowed: member.isMessageAllowed,
+            role: member.role ? member.role : null,
           });
         });
         return res.status(Success).json({ status: Success });
@@ -56,8 +58,10 @@ module.exports = {
       const response = await GetRoomsByUserId({ user_id: req.customData });
       await Promise.all(
         response.rows.map(async (image) => {
-          let url = await Image_Link(image.image_url);
-          image.image_url = url;
+          if (image.image_url) {
+            let url = await Image_Link(image.image_url);
+            image.image_url = url;
+          }
         })
       );
       res.status(Success).json({ data: response.rows, status: Success });
@@ -80,31 +84,41 @@ module.exports = {
       res.status(Bad).json({ message: err.message, status: Bad });
     }
   },
-  Get_Room_Details: async (req, res) => {
+  Get_Room_Members: async (req, res) => {
     try {
-      const response = await GetRoomDetails({
+      const response = await GetRoomMembers({
         room_id: req.params.room_id,
-        user_id: req.customData,
       });
-      if (response.rows.length) {
-        const link = await Image_Link(response.rows[0].image_url);
-        response.rows[0].image_url = link;
-        return res.status(Success).json({ data: response.rows[0], status: Success });
-      }
-      return res.status(Bad).json({ message: Something, status: Bad });
+      let currentUser;
+      await Promise.all(
+        response.rows.map(async (image, index) => {
+          if (image.id == req.customData) {
+            currentUser = image;
+          }
+          if (image.image_url) {
+            let url = await Image_Link(image.image_url);
+            image.image_url = url;
+            image.id = index + 1;
+          }
+        })
+      );
+      res.status(Success).json({ data: { members: response.rows, currentUser: currentUser }, status: Success });
     } catch (err) {
       res.status(Bad).json({ message: err.message, status: Bad });
     }
   },
   Get_Room_Messages: async (req, res) => {
     try {
+      const member_response = await GetRoomMembers({
+        room_id: req.query.room_id,
+      });
       const response = await GetRoomMessages({
         room_id: req.query.room_id,
         user_id: req.customData,
         page: req.query.page,
         messagePerPage: req.query.messagePerPage,
       });
-      if (response.rows.length) {
+      if (response.rows.length && member_response.rows.length) {
         response.rows.map((message, index) => {
           if (message.sender_id == req.customData) {
             message.isOwnMessage = true;
@@ -116,7 +130,11 @@ module.exports = {
             delete message.content_type;
             delete message.visibility;
           }
-          delete message.sender_id;
+          member_response.rows.map((member, indexs) => {
+            if (member.id == message.sender_id) {
+              message.sender_id = indexs + 1;
+            }
+          });
         });
       }
 
@@ -177,7 +195,7 @@ module.exports = {
   },
   Update_Seen_Message: async (req, res) => {
     try {
-      let time=moment()
+      let time = moment();
       const responses = await UpdateSeenMessage({ room_id: req.body.room_id, user_id: req.customData, id: req.body.id, timestamp: time.format() });
 
       return res.status(Success).json({ status: Success });

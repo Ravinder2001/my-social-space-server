@@ -13,6 +13,7 @@ const {
   Delete_Chat_History,
   Update_Seen_Message,
   Get_Seen_Message,
+  Get_Room_Members,
 } = require("../controllers/messages.controller");
 const { Messages_Validations } = require("../helpers/body_validations/messages/validator");
 const router = express.Router();
@@ -20,7 +21,7 @@ const router = express.Router();
 router.post("/createRoom", authentication, Messages_Validations.CreateRoom, Create_Room);
 router.get("/getRooms", authentication, Get_Room_By_User_id);
 router.post("/sendMessage", authentication, Messages_Validations.SendMessage, Send_Message);
-router.get("/getRoomDetails/:room_id", authentication, Get_Room_Details);
+router.get("/getRoomMembers/:room_id", authentication, Get_Room_Members);
 router.get("/getRoomMessages", authentication, Get_Room_Messages);
 router.get("/updateMessageSeenTime/:room_id", authentication, Update_Message_Seen_Time);
 router.put("/updateMessageContent", authentication, Messages_Validations.UpdateMessageContent, Update_Message_Content);

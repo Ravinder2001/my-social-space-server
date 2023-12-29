@@ -13,13 +13,6 @@ const room_body = Joi.object({
       then: Joi.required(),
       otherwise: Joi.optional(),
     }),
-  image_url: Joi.string()
-    .max(500)
-    .when("type", {
-      is: Joi.number().valid(2),
-      then: Joi.required(),
-      otherwise: Joi.optional(),
-    }),
   users: Joi.array()
     .items({
       user_id: Joi.string().required(),

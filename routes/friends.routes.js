@@ -7,6 +7,7 @@ const {
   Accept_Friend_Request,
   Delete_Friend_Request,
   Delete_Friendship,
+  Get_Friend_List,
 } = require("../controllers/friends.controller");
 const authentication = require("../helpers/JWT/authentication");
 const {
@@ -32,5 +33,6 @@ router.delete(
 );
 router.delete("/unfriend/:user_id", authentication, Delete_Friendship);
 router.get("/getRequestList", authentication, Get_Friend_Request_List);
+router.get("/getFriendList", authentication, Get_Friend_List);
 
 module.exports = router;

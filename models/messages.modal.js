@@ -2,23 +2,24 @@ const client = require("../config/db");
 const { messgaePerPage } = require("../utils/constant");
 
 module.exports = {
-  CreateRoom: ({ id, type, name, image_url }) => {
+  CreateRoom: ({ id, type, name }) => {
     return new Promise(function (resolve, reject) {
       try {
-        const response = client.query(`INSERT INTO message_room(id,type,name,image_url) VALUES ($1,$2,$3,$4)`, [id, type, name, image_url]);
+        const response = client.query(`INSERT INTO message_room(id,type,name,image_url) VALUES ($1,$2,$3,$4)`, [id, type, name, null]);
         resolve(response);
       } catch (err) {
         reject(err);
       }
     });
   },
-  AddMembers: ({ room_id, user_id, ismessageallowed }) => {
+  AddMembers: ({ room_id, user_id, ismessageallowed, role }) => {
     return new Promise(function (resolve, reject) {
       try {
-        const response = client.query(`INSERT INTO room_members(room_id,user_id,ismessageallowed) VALUES ($1,$2,$3)`, [
+        const response = client.query(`INSERT INTO room_members(room_id,user_id,ismessageallowed,role) VALUES ($1,$2,$3,$4)`, [
           room_id,
           user_id,
           ismessageallowed,
+          role,
         ]);
         resolve(response);
       } catch (err) {
@@ -30,35 +31,42 @@ module.exports = {
     return new Promise(function (resolve, reject) {
       try {
         const response = client.query(
-          `SELECT room_members.room_id,room_members.user_id,
+          `SELECT DISTINCT room_members.room_id,
           CASE
-              WHEN message_room.type = 1 THEN users.name
-              WHEN message_room.type = 2 THEN message_room.name
+            WHEN message_room.type = 1 THEN users.name
+            WHEN message_room.type = 2 THEN message_room.name
           END AS user_name,
           CASE
-              WHEN message_room.type = 1 THEN profile_pictures.image_url
-              WHEN message_room.type = 2 THEN message_room.image_url
+            WHEN message_room.type = 1 THEN users.id
+            WHEN message_room.type = 2 THEN null
+          END AS user_id,
+          CASE
+            WHEN message_room.type = 1 THEN profile_pictures.image_url
+            WHEN message_room.type = 2 THEN message_room.image_url
           END AS image_url,
           last_message.created_at AS last_message_timestamp,
-          last_message.content AS last_message_content
-      FROM room_members
-      JOIN message_room ON room_members.room_id = message_room.id
-      LEFT JOIN users ON room_members.user_id = users.id
-      LEFT JOIN profile_pictures ON users.id = profile_pictures.user_id
-      LEFT JOIN (
-          SELECT room_id, MAX(created_at) AS max_created_at
-          FROM messages
-          GROUP BY room_id
-      ) AS last_message_timestamps ON room_members.room_id = last_message_timestamps.room_id
-      LEFT JOIN messages AS last_message ON last_message.created_at = last_message_timestamps.max_created_at AND room_members.room_id = last_message.room_id
-      WHERE room_members.room_id IN (
-          SELECT room_id
+          last_message.content AS last_message_content,
+          message_room.type
           FROM room_members
-          WHERE user_id = $1
-      )
-      AND (message_room.type = 1 OR message_room.type = 2)
-      AND room_members.user_id != $1
-      ORDER BY last_message_timestamp DESC`,
+          JOIN message_room ON room_members.room_id = message_room.id
+          LEFT JOIN users ON room_members.user_id = users.id
+          LEFT JOIN profile_pictures ON users.id = profile_pictures.user_id
+          LEFT JOIN (
+            SELECT room_id, MAX(created_at) AS max_created_at
+            FROM messages
+            GROUP BY room_id
+          ) AS last_message_timestamps ON room_members.room_id = last_message_timestamps.room_id
+          LEFT JOIN messages AS last_message ON last_message.created_at = last_message_timestamps.max_created_at
+            AND room_members.room_id = last_message.room_id
+          WHERE room_members.room_id IN (
+            SELECT room_id
+            FROM room_members
+            WHERE user_id = $1
+          )
+          AND (message_room.type = 1 OR message_room.type = 2)
+          AND room_members.user_id != $1
+          ORDER BY last_message_timestamp DESC;
+          `,
           [user_id]
         );
         resolve(response);
@@ -81,36 +89,15 @@ module.exports = {
       }
     });
   },
-  GetRoomDetails: ({ room_id, user_id }) => {
+  GetRoomMembers: ({ room_id }) => {
     return new Promise(function (resolve, reject) {
       try {
-        const response = client.query(
-          `SELECT
-          type,
-          CASE
-              WHEN message_room.type = 1 THEN users.name
-              WHEN message_room.type = 2 THEN message_room.name
-          END AS user_name,
-          CASE
-              WHEN message_room.type = 1 THEN users.id
-          END AS second_user_id,
-          CASE
-              WHEN message_room.type = 1 THEN profile_pictures.image_url
-              WHEN message_room.type = 2 THEN message_room.image_url
-          END AS image_url,
-          CASE
-              WHEN message_room.type = 2 THEN ARRAY_AGG(users.name)
-              ELSE ARRAY[null]::VARCHAR[]
-          END AS members_name
-      FROM room_members
-      JOIN message_room ON room_members.room_id = message_room.id
-      LEFT JOIN users ON room_members.user_id = users.id
-      LEFT JOIN profile_pictures ON users.id = profile_pictures.user_id
-      WHERE room_members.room_id = $1
-      AND (message_room.type = 1 OR message_room.type = 2) AND room_members.user_id != $2
-      GROUP BY users.name,second_user_id,profile_pictures.image_url,message_room.image_url,room_members.room_id, message_room.type, message_room.name;`,
-          [room_id, user_id]
-        );
+        const response = client.query(`
+        SELECT room_members.ismessageallowed,room_members.role,users.name,users.id,profile_pictures.image_url
+        FROM room_members 
+        LEFT JOIN users ON users.id=room_members.user_id
+        LEFT JOIN profile_pictures ON profile_pictures.user_id=room_members.user_id
+        WHERE room_id=$1`, [room_id]);
         resolve(response);
       } catch (err) {
         reject(err);
@@ -141,7 +128,6 @@ module.exports = {
       }
     });
   },
-
   UpdateMessageSeenTime: ({ room_id, receiver_id }) => {
     return new Promise(function (resolve, reject) {
       try {

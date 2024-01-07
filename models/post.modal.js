@@ -1,10 +1,16 @@
 const client = require("../config/db");
 
 module.exports = {
-  AddPost: ({ id, user_id, caption }) => {
+  AddPost: ({ id, user_id, caption, uploadTill, uploadAt }) => {
     return new Promise(function (resolve, reject) {
       try {
-        const response = client.query(`INSERT INTO posts(id,user_id,caption) VALUES ($1,$2,$3)`, [id, user_id, caption]);
+        const response = client.query(`INSERT INTO posts(id,user_id,caption,upload_at,upload_till) VALUES ($1,$2,$3,$4,$5)`, [
+          id,
+          user_id,
+          caption,
+          uploadAt,
+          uploadTill,
+        ]);
         resolve(response);
       } catch (err) {
         reject(err);
@@ -50,7 +56,9 @@ module.exports = {
           LEFT JOIN profile_pictures ON profile_pictures.user_id=users.id
           LEFT JOIN post_privacy ON post_privacy.post_id=posts.id
           LEFT JOIN likes ON likes.post_id=posts.id
-          WHERE posts.user_id=$1 AND users.status=true
+          WHERE posts.user_id=$1 AND users.status=true 
+          AND posts.upload_at <= NOW()
+          AND (posts.upload_till IS NULL OR posts.upload_till > NOW())
           GROUP BY users.name,posts.id,posts.caption,posts.created_at,profile_pictures.image_url,post_privacy.visibility
           ORDER BY posts.created_at DESC`,
           [user_id]
@@ -76,7 +84,9 @@ module.exports = {
           LEFT JOIN profile_pictures ON profile_pictures.user_id=users.id
           LEFT JOIN post_privacy ON post_privacy.post_id=posts.id
           LEFT JOIN likes ON likes.post_id=posts.id
-          WHERE posts.user_id=$1 AND users.status=true AND post_privacy.visibility!='private'
+          WHERE posts.user_id=$1 AND users.status=true AND post_privacy.visibility!='private' 
+          AND posts.upload_at <= NOW()
+          AND (posts.upload_till IS NULL OR posts.upload_till > NOW())
           GROUP BY users.name,posts.id,posts.caption,posts.created_at,profile_pictures.image_url,post_privacy.like_allowed,post_privacy.comment_allowed,
           post_privacy.share_allowed
           ORDER BY posts.created_at DESC`,
@@ -110,6 +120,8 @@ module.exports = {
           AND users.status=true 
           AND (friends.status IS Null OR friends.status=true)
           AND post_privacy.visibility != 'private'
+          AND posts.upload_at <= NOW()
+          AND (posts.upload_till IS NULL OR posts.upload_till > NOW())
           GROUP BY users.name,posts.id,posts.caption,posts.created_at,profile_pictures.image_url,post_privacy.like_allowed,post_privacy.comment_allowed,
           post_privacy.share_allowed
           ORDER BY posts.created_at DESC`,
@@ -199,7 +211,12 @@ module.exports = {
   FindPostById: ({ id }) => {
     return new Promise((resolve, reject) => {
       try {
-        const response = client.query(`SELECT id FROM posts WHERE id=$1`, [id]);
+        const response = client.query(
+          `SELECT id FROM posts WHERE id=$1 
+        AND posts.upload_at <= NOW()
+        AND (posts.upload_till IS NULL OR posts.upload_till > NOW())`,
+          [id]
+        );
         resolve(response);
       } catch (err) {
         reject(err);
@@ -219,7 +236,9 @@ module.exports = {
           LEFT JOIN profile_pictures ON profile_pictures.user_id=users.id
           LEFT JOIN post_privacy ON post_privacy.post_id=posts.id
           LEFT JOIN likes ON likes.post_id=posts.id
-          WHERE posts.id=$1 AND users.status=true
+          WHERE posts.id=$1 AND users.status=true 
+          AND posts.upload_at <= NOW()
+          AND (posts.upload_till IS NULL OR posts.upload_till > NOW())
           GROUP BY users.name,posts.id,posts.caption,posts.created_at,profile_pictures.image_url,profile_pictures.image_url,post_privacy.like_allowed,post_privacy.comment_allowed,
           post_privacy.share_allowed`,
           [post_id]
@@ -299,7 +318,8 @@ module.exports = {
   GetFriendsIdByPostId: ({ post_id }) => {
     return new Promise((resolve, reject) => {
       try {
-        const response = client.query(`
+        const response = client.query(
+          `
         WITH PostUser AS (
           SELECT user_id
           FROM posts
@@ -312,7 +332,9 @@ module.exports = {
           END AS friend_id
         FROM friends
         JOIN PostUser ON friends.user1_id = PostUser.user_id OR friends.user2_id = PostUser.user_id;
-      `, [post_id]);
+      `,
+          [post_id]
+        );
         resolve(response);
       } catch (err) {
         reject(err);

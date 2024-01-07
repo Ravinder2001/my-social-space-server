@@ -31,8 +31,10 @@ module.exports = {
       const post_id = uuidv4();
       const user_id = req.customData;
       const caption = req.body.caption;
+      const uploadAt = req.body.uploadAt;
+      const uploadTill = req.body.uploadTill;
       const images = req.files;
-      await AddPost({ id: post_id, user_id, caption });
+      await AddPost({ id: post_id, user_id, caption,uploadAt,uploadTill });
       await AddPostPrivacy({
         post_id: post_id,
         comment: req.body.comment,

@@ -8,6 +8,11 @@ const moment = require("moment/moment");
 module.exports = {
   Add_Story: async (req, res) => {
     try {
+      const originalTimestamp = moment();
+      const istTimestamp = new Date(originalTimestamp);
+      istTimestamp.toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
+      const expireTimestamp = new Date(istTimestamp.getTime() + 24 * 60 * 60 * 1000);
+
       const { song, start_time, end_time } = req.body;
       const user = req.customData;
 
@@ -22,7 +27,7 @@ module.exports = {
       const command = new PutObjectCommand(Params);
       const image_res = await s3.send(command);
       if (image_res.$metadata.httpStatusCode == Success) {
-        await AddStory({ user_id: user, image_url: Key, song, start_time, end_time });
+        await AddStory({ user_id: user, image_url: Key, song, start_time, end_time, expire_at: expireTimestamp });
       }
       return res.status(Success).json({
         status: Success,
@@ -33,7 +38,7 @@ module.exports = {
   },
   Delete_Story: async (req, res) => {
     try {
-      const image_res = await FindStoryById({ story_id: req.params.story_id,user_id: req.customData});
+      const image_res = await FindStoryById({ story_id: req.params.story_id, user_id: req.customData });
       if (image_res.rows.length) {
         const params = {
           Bucket: bucket_name,

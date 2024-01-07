@@ -1,15 +1,16 @@
 const client = require("../config/db");
 
 module.exports = {
-  AddStory: ({ user_id, image_url, song, start_time, end_time }) => {
+  AddStory: ({ user_id, image_url, song, start_time, end_time, expire_at }) => {
     return new Promise(function (resolve, reject) {
       try {
-        const response = client.query(`INSERT INTO story(user_id,image_url,song,start_time,end_time) VALUES ($1,$2,$3,$4,$5)`, [
+        const response = client.query(`INSERT INTO story(user_id,image_url,song,start_time,end_time,expire_at) VALUES ($1,$2,$3,$4,$5,$6)`, [
           user_id,
           image_url,
           song,
           parseInt(start_time),
           parseInt(end_time),
+          expire_at,
         ]);
         resolve(response);
       } catch (err) {
@@ -27,10 +28,10 @@ module.exports = {
       }
     });
   },
-  FindStoryById: ({ story_id,user_id }) => {
+  FindStoryById: ({ story_id, user_id }) => {
     return new Promise(function (resolve, reject) {
       try {
-        const response = client.query(`SELECT image_url FROM story WHERE id=$1 AND user_id=$2`, [story_id,user_id]);
+        const response = client.query(`SELECT image_url FROM story WHERE id=$1 AND user_id=$2`, [story_id, user_id]);
         resolve(response);
       } catch (err) {
         reject(err);
@@ -40,7 +41,13 @@ module.exports = {
   FindStoryByUserId: ({ user_id }) => {
     return new Promise(function (resolve, reject) {
       try {
-        const response = client.query(`SELECT id,image_url as story_image,song,start_time,end_time,created_at FROM story WHERE user_id=$1`, [user_id]);
+        const response = client.query(
+          `
+        SELECT id,image_url as story_image,song,start_time,end_time,created_at 
+        FROM story 
+        WHERE user_id=$1 AND expire_at > NOW()`,
+          [user_id]
+        );
         resolve(response);
       } catch (err) {
         reject(err);
@@ -79,10 +86,8 @@ module.exports = {
                   WHEN friends.user1_id = $1 THEN friends.user2_id
                   WHEN friends.user2_id = $1 THEN friends.user1_id
               END
-        WHERE friends.status = true
-        GROUP BY friends.user1_id, profile_pictures.image_url, users.name;
-        
-        `,
+        WHERE friends.status = true AND story.expire_at > NOW()
+        GROUP BY friends.user1_id, profile_pictures.image_url, users.name;`,
           [user_id]
         );
         resolve(response);

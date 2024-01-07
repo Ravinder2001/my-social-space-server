@@ -1,4 +1,5 @@
 const { CreateNotifications, GetNotifications } = require("../models/Notifications.modal");
+const { Image_Link } = require("../s3_bucket.config");
 const { Bad, Success, SuccessWithNoContent } = require("../utils/constant");
 
 module.exports = {
@@ -20,6 +21,12 @@ module.exports = {
       const response = await GetNotifications({
         user_id: req.customData,
       });
+      await Promise.all(
+        response.rows.map(async (noti) => {
+          let url = await Image_Link(noti.image_url);
+          noti.image_url = url;
+        })
+      );
       res.status(Success).json({ data: response.rows, status: Success });
     } catch (err) {
       res.status(Bad).json({ message: err.message, status: Bad });

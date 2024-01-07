@@ -1,5 +1,4 @@
 const express = require("express");
-const cron = require("node-cron");
 const morgan = require("morgan");
 
 const app = express();
@@ -7,6 +6,7 @@ const { Server } = require("socket.io");
 const cors = require("cors");
 const PORT = process.env.PORT | 5000;
 const client = require("./config/db");
+const jobs = require("./jobs/cronJob");
 
 const config = require("./utils/config");
 const Authentication_Routes = require("./routes/users.routes");
@@ -18,7 +18,7 @@ const Notifications_Routes = require("./routes/notifications.routes");
 const GPT_Routes = require("./routes/gpt.routes");
 
 const { Get_UserId_By_Socket, Get_SocketId_By_UserId, Add_Socket_User, Get_Friends_UserId } = require("./models/socket.modal");
-const { UpdateUserOnlineStatus } = require("./models/users.model");
+const { UpdateUserOnlineStatus, GetProfilePicture } = require("./models/users.model");
 const rateLimit = require("express-rate-limit");
 const { GetFriendsIdByPostId, GetPostWithPostId, GetUserIdByPostId } = require("./models/post.modal");
 const { CreateNotifications } = require("./models/Notifications.modal");
@@ -31,9 +31,11 @@ const limiter = rateLimit({
 
 app.use(limiter);
 app.use(morgan("dev"));
-app.use(cors({
-  origin:"*"
-}));
+app.use(
+  cors({
+    origin: "*",
+  })
+);
 
 app.use(express.json());
 app.use("/", Authentication_Routes);
@@ -43,10 +45,6 @@ app.use("/messages", Messages_Routes);
 app.use("/story", Story_Routes);
 app.use("/notifications", Notifications_Routes);
 app.use("/GPT", GPT_Routes);
-
-cron.schedule("*/5 * * * *", () => {
-  console.log("Printing to console every 14th minute!");
-});
 
 const server = app.listen(PORT, () => {
   console.log(`Server is running on Port ${PORT}`);
@@ -99,9 +97,8 @@ io.on("connection", async (socket) => {
     }
   });
   socket.on("User-Typing", async (user_id) => {
-  
     const anotherSocketId = await Get_SocketId_By_UserId({ user_id: user_id });
-    
+
     if (anotherSocketId.rows.length) {
       socket.to(anotherSocketId.rows[0].socket_id).emit("User-Typing");
     }
@@ -121,11 +118,12 @@ io.on("connection", async (socket) => {
       socket.to(socketId.rows[0].socket_id).emit("Like-Toogle");
     });
     if (isLiked && UserId != admin_Id.rows[0].user_id) {
+      const image_res = await GetProfilePicture({ user_id: UserId });
       await CreateNotifications({
         user_id: admin_Id.rows[0].user_id,
         notification_type: "like",
         message: `${UserName} ${PostLikeNotification}`,
-        image,
+        image: image_res.rows[0].image_url ?? null,
       });
       const socketId = await Get_SocketId_By_UserId({ user_id: admin_Id.rows[0].user_id });
       socket.to(socketId.rows[0].socket_id).emit("Notification");
@@ -134,11 +132,12 @@ io.on("connection", async (socket) => {
   socket.on("Comment-Notifications", async ({ post_id, UserName, UserId, image }) => {
     const admin_Id = await GetPostWithPostId({ post_id });
     if (UserId != admin_Id.rows[0].user_id) {
+      const image_res = await GetProfilePicture({ user_id: UserId });
       await CreateNotifications({
         user_id: admin_Id.rows[0].user_id,
         notification_type: "comment",
         message: `${UserName} ${PostCommentNotification}`,
-        image,
+        image: image_res.rows[0].image_url ?? null,
       });
       const socketId = await Get_SocketId_By_UserId({ user_id: admin_Id.rows[0].user_id });
       socket.to(socketId.rows[0].socket_id).emit("Notification");

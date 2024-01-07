@@ -158,6 +158,7 @@ CREATE TABLE story (
     start_time INTEGER,
     end_time INTEGER,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    expire_at TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 

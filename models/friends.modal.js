@@ -80,7 +80,7 @@ module.exports = {
     return new Promise(function (resolve, reject) {
       try {
         const response = client.query(
-          `SELECT users.id, users.name, profile_pictures.image_url
+          `SELECT users.id, users.name,users.job, profile_pictures.image_url
           FROM users
           JOIN friends ON (users.id = friends.user1_id OR users.id = friends.user2_id)
           LEFT JOIN profile_pictures ON users.id = profile_pictures.user_id

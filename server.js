@@ -33,7 +33,7 @@ app.use(limiter);
 app.use(morgan("dev"));
 app.use(
   cors({
-    origin: "*",
+    origin: "https://my-social-space.vercel.app/",
   })
 );
 

@@ -1,14 +1,16 @@
 const express = require("express");
 const morgan = require("morgan");
+const cors = require("cors");
+const rateLimit = require("express-rate-limit");
+const { Server } = require("socket.io");
+const jobs = require("./jobs/cronJob");
+const client = require("./config/db");
+const config = require("./utils/config");
+
+const PORT = process.env.PORT | 5000;
 
 const app = express();
-const { Server } = require("socket.io");
-const cors = require("cors");
-const PORT = process.env.PORT | 5000;
-const client = require("./config/db");
-const jobs = require("./jobs/cronJob");
 
-const config = require("./utils/config");
 const Authentication_Routes = require("./routes/users.routes");
 const Post_Routes = require("./routes/post.routes");
 const Friends_Routes = require("./routes/friends.routes");
@@ -19,8 +21,7 @@ const GPT_Routes = require("./routes/gpt.routes");
 
 const { Get_UserId_By_Socket, Get_SocketId_By_UserId, Add_Socket_User, Get_Friends_UserId } = require("./models/socket.modal");
 const { UpdateUserOnlineStatus, GetProfilePicture } = require("./models/users.model");
-const rateLimit = require("express-rate-limit");
-const { GetFriendsIdByPostId, GetPostWithPostId, GetUserIdByPostId } = require("./models/post.modal");
+const { GetFriendsIdByPostId, GetPostWithPostId } = require("./models/post.modal");
 const { CreateNotifications } = require("./models/Notifications.modal");
 const { PostLikeNotification, PostCommentNotification } = require("./utils/Notifications");
 

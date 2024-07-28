@@ -11,6 +11,17 @@ async function hashString(stringToHash) {
   }
 }
 
+async function compareStrings(string, hashedString) {
+  try {
+    const isMatch = await bcrypt.compare(string, hashedString);
+    return isMatch;
+  } catch (error) {
+    console.error("Error comparing strings:", error);
+    throw error;
+  }
+}
+
 module.exports = {
   hashString,
+  compareStrings,
 };

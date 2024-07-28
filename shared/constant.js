@@ -18,12 +18,9 @@ module.exports = {
     expiry_time: 10, //Minutes
   },
   Messages: {
+    REGISTER_SUCCESSFUL: "User registered Sucessfully.",
     LOGIN_SUCCESSFUL: "User Login Sucessfully.",
-    INTERNAL_SERVER_ERROR: "Internal server error.",
-    INVALID_ARGUMENT: "Invalid Arguments",
-    ALREADY_LOGIN: "You are already login for today.",
-    LOG_IN: "Successfully Login for today.",
-    FORGOT_LOG_IN: "You have not login today",
-    LOG_OUT: "Successfully Logout for today.",
+    INVALID_PASSWORD: "Invalid Password",
+    
   },
 };

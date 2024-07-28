@@ -64,7 +64,7 @@ const isEmptyObj = (obj) => {
   return true;
 };
 
-const generateTokenFromUserDetails = (data) => {
+const generateToken = (data) => {
   return jwt.sign(
     {
       iss: "my-social-space",
@@ -82,7 +82,7 @@ const generateTokenFromUserDetails = (data) => {
 module.exports = {
   errorResponse: errorResponse,
   isEmptyObj,
-  generateTokenFromUserDetails,
+  generateToken,
   successResponse,
   handleAsyncError,
 };

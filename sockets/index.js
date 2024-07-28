@@ -1,5 +1,5 @@
 const userSockets = new Map();
-const { decodeJWT } = require("../shared/comman");
+const { decodeJWT } = require("../helpers/jwt");
 module.exports = (io) => {
   io.on("connection", async (socket) => {
     console.log("User Connected");

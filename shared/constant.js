@@ -1,5 +1,3 @@
-const Config = require("../../configuration/config.js");
-
 module.exports = {
   TIME_FORMAT: {
     STANDARD_TIME_FORMAT: "YYYY-MM-DD HH:mm:ss",

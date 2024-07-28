@@ -8,6 +8,7 @@ const client = require("./configuration/db");
 const config = require("./configuration/config");
 const bodyParser = require("body-parser");
 const socketHandlers = require("./sockets/index");
+const userRouter = require("./routes/users.routes");
 
 const PORT = process.env.PORT | 5000;
 
@@ -33,6 +34,8 @@ app.use((req, res, next) => {
   res.setHeader("Cache-Control", "no-cache, no-store");
   next();
 });
+
+app.use("/", userRouter);
 
 const io = app.listen(PORT, () => {
   console.log(`Server is running on Port ${PORT}`);

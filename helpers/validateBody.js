@@ -1,5 +1,5 @@
-const { Messages, HttpStatus } = require("../../shared/constant");
-const common = require("../../controller/common.controller");
+const { Messages, HttpStatus } = require("../shared/constant");
+const common = require("../controllers/comman.controller");
 
 const validateBody = (schema) => {
   return (req, res, next) => {

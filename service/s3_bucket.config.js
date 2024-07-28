@@ -1,12 +1,7 @@
 const { S3Client, GetObjectCommand } = require("@aws-sdk/client-s3");
-const {
-  access_key,
-  secret_key,
-  bucket_region,
-  bucket_name,
-} = require("./utils/config");
+const { access_key, secret_key, bucket_region, bucket_name } = require("./utils/config");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
-const { Image_Exp_Duration } = require("./utils/constant");
+const { Image_Exp_Duration } = require("../utils/constant");
 
 const s3 = new S3Client({
   credentials: {

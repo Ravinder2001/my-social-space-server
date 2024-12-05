@@ -56,7 +56,7 @@ module.exports = {
       "application/octet-stream",
     ],
   },
-  VARIABLES:{
-    REGEX:"^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])"
-  }
+  VARIABLES: {
+    REGEX: "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])",
+  },
 };

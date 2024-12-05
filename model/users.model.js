@@ -36,4 +36,18 @@ module.exports = {
       throw error;
     }
   },
+  getUserDetailsByID: async (user_id) => {
+    try {
+      const query = `SELECT * FROM tbl_users WHERE user_id = $1`;
+
+      const params = [user_id];
+
+      const result = await client.query(query, params);
+
+      return result.rows[0];
+    } catch (error) {
+      console.error("Error in registering user:", error.message);
+      throw error;
+    }
+  },
 };

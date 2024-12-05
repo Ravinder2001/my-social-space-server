@@ -16,6 +16,8 @@ let Messages = {
   DATA_DELETED: "Data deleted successfully.",
   INVALID_TYPE: "Invalid type.",
   PARAMETERS_REQ: "Request parameters are required",
+  INVALID_PAYLOAD: "Not a valid payload",
+  ALREADY_EXISTS: (field,fieldName) => `${fieldName}: ${field} is already exists.`,
 
   // Authentication & Authorization
   AUTH_REQUIRED: "Authentication required. Please log in.",

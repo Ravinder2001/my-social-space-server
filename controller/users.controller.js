@@ -13,7 +13,7 @@ module.exports = {
 
       const token = await common.generateUserToken(response);
 
-      return common.successResponse(res, Messages.LOGIN_SUCCESS, HttpStatus.OK, {
+      return common.successResponse(res, Messages.USER_REGISTER_SUCCESS, HttpStatus.OK, {
         token,
       });
     } catch (error) {

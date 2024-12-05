@@ -6,20 +6,12 @@ const morgan = require("morgan");
 const rateLimit = require("express-rate-limit");
 const moment = require("moment");
 
-const { Server } = require("socket.io");
+// const { Server } = require("socket.io");
 
-const socketHandlers = require("./sockets/index");
-const superAdminRouter = require("./routes/superAdmin/routes");
-const guestAdminRouter = require("./routes/guestAdmin/routes");
-const staffModuleRouter = require("./routes/staffService/routes");
-const guestRouter = require("./routes/guest/routes");
-const commanRouter = require("./routes/comman/comman.routes");
-const uploadRouter = require("./routes/comman/upload.routes");
-const setupSwaggerRoutes = require("./service/swagger/swaggerRoutes");
 const config = require("./configuration/config");
 
 require("./jobs/cronJob");
-require("./auth/index");
+require("./configuration/db");
 
 const port = config.PORT;
 const app = express();
@@ -73,25 +65,9 @@ app.use((req, res, next) => {
 
 app.use(morgan(":method :url :status - userId: :user - :ist-date"));
 
-setupSwaggerRoutes(app);
 
-app.use("/superAdmin", superAdminRouter);
-app.use("/guestAdmin", guestAdminRouter);
-app.use("/staffModule", staffModuleRouter);
-app.use("/guest", guestRouter);
-app.use("/comman", commanRouter);
-app.use("/upload", uploadRouter);
-
-const server = app.listen(port, () => {
+app.listen(port, () => {
   process.stdout.write(`Server is running on port ${port}\n`);
 });
 
-const io = new Server(server, {
-  cors: {
-    credentials: true,
-    origin: "*",
-  },
-});
 
-// Initialize socket handlers
-socketHandlers(io);

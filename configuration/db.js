@@ -1,15 +1,8 @@
 const { Client } = require("pg");
-const fs = require("fs");
-const path = require("path");
 
 const config = require("../configuration/config");
 
 let client;
-
-//! SSL certificate for PostgreSQL cloud database
-const pemPath = process.env.DATABASE_SSL_CERT_PATH;
-const pem = fs.readFileSync(path.resolve(pemPath));
-// console.log('Check env getting properly',process.env.NODE_ENV);
 
 async function initializeDatabase() {
   try {
@@ -20,11 +13,7 @@ async function initializeDatabase() {
         host: host,
         database: database,
         password: password,
-        port: port,
-        ssl: {
-          rejectUnauthorized: true,
-          ca: pem,
-        },
+        port: port
       });
 
       // Connection events

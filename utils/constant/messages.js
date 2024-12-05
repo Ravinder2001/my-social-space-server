@@ -1,0 +1,115 @@
+let Messages = {
+  // General
+  SUCCESS: "Request completed successfully.",
+  FAILED: "Request failed. Please try again.",
+  SERVER_ERROR: "Internal server error. Please try again later.",
+  NOT_FOUND: "Resource not found.",
+  UNAUTHORIZED: "Unauthorized access.",
+  FORBIDDEN: "You do not have permission to access this resource.",
+  BAD_REQUEST: "Invalid request data.",
+  VALIDATION_ERROR: "Request data validation failed.",
+  INVALID_FILE_TYPE: "Invalid file type. Please upload a valid file.",
+  INVALID_FILE_SIZE: (min, max) => `File size must be between ${min} and ${max}.`,
+  NO_DATA: "No data found.",
+  DATA_ADDED: "Data added successfully.",
+  DATA_UPDATED: "Data updated successfully.",
+  DATA_DELETED: "Data deleted successfully.",
+  INVALID_TYPE: "Invalid type.",
+  PARAMETERS_REQ: "Request parameters are required",
+
+  // Authentication & Authorization
+  AUTH_REQUIRED: "Authentication required. Please log in.",
+  LOGIN_SUCCESS: "Login successful.",
+  LOGIN_FAILED: "Login failed. Check your credentials.",
+  LOGOUT_SUCCESS: "Logout successful.",
+  TOKEN_EXPIRED: "Your session has expired. Please log in again.",
+  ACCESS_DENIED: "Access denied.",
+  PASSWORD_RESET: "Password reset successful.",
+  INVALID_CREDS: "Invalid credentials.",
+  INVALID_USER_ID: "Invalid user ID.",
+
+  // File Upload
+  FILE_UPLOAD_SUCCESS: "File uploaded successfully.",
+  FILE_UPLOAD_FAILED: "File upload failed. Please try again.",
+  FILE_SIZE_EXCEEDED: "File size exceeds the allowed limit.",
+  FILE_SIZE_TOO_SMALL: "File size is too small.",
+  MULTIPART_ERROR: "Failed to parse form data.",
+  FILE_NOT_FOUND: "File not found.",
+
+  // Database Operations
+  DATA_FETCH_SUCCESS: "Data fetched successfully.",
+  DATA_FETCH_FAILED: "Failed to fetch data.",
+  DATA_SAVE_SUCCESS: "Data saved successfully.",
+  DATA_SAVE_FAILED: "Failed to save data.",
+  DATA_UPDATE_SUCCESS: "Data updated successfully.",
+  DATA_UPDATE_FAILED: "Failed to update data.",
+  DATA_DELETE_SUCCESS: "Data deleted successfully.",
+  DATA_DELETE_FAILED: "Failed to delete data.",
+
+  // User Management
+  USER_REGISTER_SUCCESS: "User registered successfully.",
+  USER_REGISTER_FAILED: "User registration failed.",
+  USER_NOT_FOUND: "User not found.",
+  USER_UPDATE_SUCCESS: "User details updated successfully.",
+  USER_UPDATE_FAILED: "Failed to update user details.",
+  USER_DELETE_SUCCESS: "User deleted successfully.",
+  USER_DELETE_FAILED: "Failed to delete user.",
+  USER_ALREADY_EXISTS: "User already exists.",
+
+  // Form Validation
+  REQUIRED_FIELD: (field) => `${field} is required.`,
+  INVALID_EMAIL: "Invalid email format.",
+  INVALID_PHONE: "Invalid phone number.",
+  PASSWORD_TOO_WEAK: "Password is too weak. Please choose a stronger password.",
+  PASSWORD_MISMATCH: "Passwords do not match.",
+
+  // Custom Messages
+  OTP_SENT: "OTP has been sent to your registered phone number.",
+  OTP_VERIFIED: "OTP verified successfully.",
+  OTP_EXPIRED: "OTP has expired. Please request a new one.",
+
+  // API Specific
+  API_LIMIT_EXCEEDED: "API rate limit exceeded. Please wait and try again.",
+  INVALID_REQUEST: "Invalid request format.",
+  MISSING_PARAMETERS: "Required parameters are missing.",
+
+  // Pagination
+  PAGE_NOT_FOUND: "Requested page not found.",
+  INVALID_PAGE_NUMBER: "Invalid page number.",
+
+  // Networking
+  CONNECTION_ERROR: "Network connection error. Please check your internet connection.",
+  TIMEOUT_ERROR: "The request timed out. Please try again.",
+
+  // Excel
+  INVALID_TEMPLATE: "Invalid template. Sheet 'Sheet1' not found.",
+  METADATA_MISSING: "Invalid template. Metadata missing.",
+  INVALID_TEMPLATE_VERSION: "Invalid template version. Please download the latest template.",
+  INVALID_TEMPLATE_HEADERS: "Invalid template headers. Please download the latest template.",
+  TEMPLATE_PROCESSED: "Template successfully validated and processed.",
+  INVALID_EXCEL_TYPE: "Invalid type. Only Excel or PDF are allowed.",
+
+  // Ticket
+  TICKET_CREATED: "Ticket created successfully.",
+  TICKET_ACCEPTED: "Ticket accepted successfully.",
+  TICKET_DELETED: "Ticket deleted successfully.",
+
+  // Billing
+  BILL_CREATED: "Bill created successfully.",
+  BILL_SETTLE_ROOM: "Bill settled successfully to room.",
+  BILL_SETTLE_CITY_LEDGER: "Bill settled successfully to city ledger.",
+  BILL_SETTLE_STAFF: "Bill settled successfully to staff.",
+  BILL_SETTLE_COMPLIMENTERY: "Bill settled successfully to complimentary.",
+  NO_COMPANY_NAME: "Please enter company name to save details",
+  IN_SUFF_AMT_SPLIT: "Insufficient amount to split",
+  WINDOW_ERR: "Transactions must be in the same window to combine",
+  TRS_COMBINED: "Transactions combined successfully",
+  TARGET_WINDOW_MISSING: "Target window is required when multiple window exist",
+  TRS_MOVED: "Transactions moved successfully",
+
+  // Chat
+  MSG_DELETED: "This message was deleted.",
+  CHANNEL_CREATED: "Channel created successfully.",
+};
+
+module.exports = Messages;

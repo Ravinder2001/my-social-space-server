@@ -13,7 +13,7 @@ async function initializeDatabase() {
         host: host,
         database: database,
         password: password,
-        port: port
+        port: port,
       });
 
       // Connection events

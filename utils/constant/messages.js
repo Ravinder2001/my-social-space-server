@@ -27,6 +27,7 @@ let Messages = {
   PASSWORD_RESET: "Password reset successful.",
   INVALID_CREDS: "Invalid credentials.",
   INVALID_USER_ID: "Invalid user ID.",
+  WRONG_PASSWORD: "Password did not match, Please check.",
 
   // File Upload
   FILE_UPLOAD_SUCCESS: "File uploaded successfully.",
@@ -55,6 +56,7 @@ let Messages = {
   USER_DELETE_SUCCESS: "User deleted successfully.",
   USER_DELETE_FAILED: "Failed to delete user.",
   USER_ALREADY_EXISTS: "User already exists.",
+  USER_DEACTIVATED: "Your account is currently deactivated. Please contact the administrator for assistance.",
 
   // Form Validation
   REQUIRED_FIELD: (field) => `${field} is required.`,
@@ -62,11 +64,6 @@ let Messages = {
   INVALID_PHONE: "Invalid phone number.",
   PASSWORD_TOO_WEAK: "Password is too weak. Please choose a stronger password.",
   PASSWORD_MISMATCH: "Passwords do not match.",
-
-  // Custom Messages
-  OTP_SENT: "OTP has been sent to your registered phone number.",
-  OTP_VERIFIED: "OTP verified successfully.",
-  OTP_EXPIRED: "OTP has expired. Please request a new one.",
 
   // API Specific
   API_LIMIT_EXCEEDED: "API rate limit exceeded. Please wait and try again.",
@@ -80,32 +77,6 @@ let Messages = {
   // Networking
   CONNECTION_ERROR: "Network connection error. Please check your internet connection.",
   TIMEOUT_ERROR: "The request timed out. Please try again.",
-
-  // Excel
-  INVALID_TEMPLATE: "Invalid template. Sheet 'Sheet1' not found.",
-  METADATA_MISSING: "Invalid template. Metadata missing.",
-  INVALID_TEMPLATE_VERSION: "Invalid template version. Please download the latest template.",
-  INVALID_TEMPLATE_HEADERS: "Invalid template headers. Please download the latest template.",
-  TEMPLATE_PROCESSED: "Template successfully validated and processed.",
-  INVALID_EXCEL_TYPE: "Invalid type. Only Excel or PDF are allowed.",
-
-  // Ticket
-  TICKET_CREATED: "Ticket created successfully.",
-  TICKET_ACCEPTED: "Ticket accepted successfully.",
-  TICKET_DELETED: "Ticket deleted successfully.",
-
-  // Billing
-  BILL_CREATED: "Bill created successfully.",
-  BILL_SETTLE_ROOM: "Bill settled successfully to room.",
-  BILL_SETTLE_CITY_LEDGER: "Bill settled successfully to city ledger.",
-  BILL_SETTLE_STAFF: "Bill settled successfully to staff.",
-  BILL_SETTLE_COMPLIMENTERY: "Bill settled successfully to complimentary.",
-  NO_COMPANY_NAME: "Please enter company name to save details",
-  IN_SUFF_AMT_SPLIT: "Insufficient amount to split",
-  WINDOW_ERR: "Transactions must be in the same window to combine",
-  TRS_COMBINED: "Transactions combined successfully",
-  TARGET_WINDOW_MISSING: "Target window is required when multiple window exist",
-  TRS_MOVED: "Transactions moved successfully",
 
   // Chat
   MSG_DELETED: "This message was deleted.",

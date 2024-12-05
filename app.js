@@ -8,12 +8,14 @@ const moment = require("moment");
 
 // const { Server } = require("socket.io");
 
+const mainRouter = require("./routes/routes");
 const config = require("./configuration/config");
 
 require("./jobs/cronJob");
 require("./configuration/db");
 
 const port = config.PORT;
+
 const app = express();
 
 const corsOptions = {
@@ -65,9 +67,8 @@ app.use((req, res, next) => {
 
 app.use(morgan(":method :url :status - userId: :user - :ist-date"));
 
+app.use("/", mainRouter);
 
 app.listen(port, () => {
   process.stdout.write(`Server is running on port ${port}\n`);
 });
-
-

@@ -24,7 +24,6 @@ module.exports = {
   },
   getUserDetailsByEmail: async (email) => {
     try {
-
       const query = `SELECT * FROM tbl_users WHERE email = $1`;
 
       const params = [email];

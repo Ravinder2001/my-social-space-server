@@ -7,7 +7,8 @@ const validateData = require("../middleware/userValidation");
 
 const router = express.Router();
 
-router.post("/register", validateBody(schemas.registerUser), validateData.validateEmail, validateData.validateUsername, UserController.register);
+router.post("/register", validateBody(schemas.registerUser), validateData.validateEmail, UserController.register);
 router.post("/login", validateBody(schemas.loginUser), guestDbValidate.validateLogin, UserController.login);
+router.post("/google-signin", validateBody(schemas.googleLogin), UserController.googleLogin);
 
 module.exports = router;

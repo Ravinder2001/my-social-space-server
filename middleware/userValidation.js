@@ -18,18 +18,5 @@ module.exports = {
       return commonController.handleAsyncError(error, res);
     }
   },
-  validateUsername: async (req, res, next) => {
-    const { username } = req.body;
-    try {
-      const status = await dbValidationForDuplicate(username, "tbl_users", "username");
-      if (status === HttpStatus.BAD_REQUEST) {
-        return commonController.errorResponse(res, Messages.INVALID_PAYLOAD, HttpStatus.BAD_REQUEST);
-      } else if (status === HttpStatus.ALREADY_EXISTS) {
-        return commonController.errorResponse(res, Messages.ALREADY_EXISTS(username, "Username"), HttpStatus.ALREADY_EXISTS);
-      }
-      next();
-    } catch (error) {
-      return commonController.handleAsyncError(error, res);
-    }
-  },
+
 };

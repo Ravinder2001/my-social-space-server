@@ -20,6 +20,9 @@ const config = {
   cryptR: {
     secret: process.env.CRYPTO_SECRET_KEY,
   },
+  google: {
+    google_client_id: process.env.GOOGLE_CLIENT_ID,
+  },
 };
 
 module.exports = config;

@@ -30,7 +30,7 @@ const jwtOptions = {
  */
 
 passport.use(
-  "jwtStaff",
+  "jwt",
   new JwtStrategy(jwtOptions, async (payload, done) => {
     try {
       if (!payload.iss) {
@@ -42,6 +42,9 @@ passport.use(
       if (!user) {
         return done(null, false);
       }
+
+      delete user.password;
+
       return done(null, user);
     } catch (error) {
       return done(error, false);

@@ -25,12 +25,12 @@ module.exports = {
       if (common.isEmptyObj(err)) {
         next();
       } else {
-        return res.status(400).json({ status: 0, message: err.message });
+        return res.status(400).json({ success: 0, message: err.message });
       }
     } catch (error) {
       console.error("Error during login validation:", error);
       return res.status(500).json({
-        status: 0,
+        success: 0,
         message: Messages.SERVER_ERROR,
       });
     }

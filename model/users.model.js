@@ -50,4 +50,18 @@ module.exports = {
       throw error;
     }
   },
+  usernameExists: async (username) => {
+    try {
+      const query = `SELECT * FROM tbl_users WHERE username = $1`;
+
+      const params = [username];
+
+      const result = await client.query(query, params);
+
+      return result.rows.length > 0;
+    } catch (error) {
+      console.error("Error in checking username:", error.message);
+      throw error;
+    }
+  },
 };

@@ -18,5 +18,4 @@ module.exports = {
       return commonController.handleAsyncError(error, res);
     }
   },
-
 };

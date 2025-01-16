@@ -24,7 +24,10 @@ module.exports = {
         const imageKey = `${keyPrefix}/${imageName}`;
 
         // Upload image to S3
-        await uploadImageToS3(image, imageKey);
+        let resss = await uploadImageToS3(image, imageKey);
+        if (resss.error) {
+          return common.errorResponse(res, resss.error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
 
         // Generate URL
         const url = await generatePreSignedURL(imageKey);

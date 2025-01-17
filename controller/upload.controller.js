@@ -28,12 +28,13 @@ module.exports = {
         if (resss.error) {
           return common.errorResponse(res, resss.error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
+        
+        // Add image to trash for potential rollback
+        await imageTrashModel.addFilesToTrash([imageKey]);
 
         // Generate URL
         const url = await generatePreSignedURL(imageKey);
 
-        // Add image to trash for potential rollback
-        await imageTrashModel.addFilesToTrash([imageKey]);
 
         uploadedImages.push({ key: imageKey, url });
       }

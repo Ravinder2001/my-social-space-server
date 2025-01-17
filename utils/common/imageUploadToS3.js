@@ -53,7 +53,9 @@ module.exports = {
       Bucket: s3_bucket.bucket_name,
       Key: Key,
     });
-    const signedUrl = await getSignedUrl(s3, getObjectCommand);
+    const signedUrl = await getSignedUrl(s3, getObjectCommand, {
+      expiresIn: 36000,
+    });
 
     return signedUrl;
   },

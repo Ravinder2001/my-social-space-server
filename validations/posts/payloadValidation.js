@@ -15,9 +15,9 @@ module.exports = {
           }),
         }),
       tags: Joi.array().items(Joi.number()).optional(),
-      post_visibility: Joi.string().valid("public", "private", "friends").required(),
-      allow_comments: Joi.boolean().required(),
-      allow_likes: Joi.boolean().required(),
+      postVisibility: Joi.string().valid("public", "private", "friends").required(),
+      allowComments: Joi.boolean().required(),
+      allowLikes: Joi.boolean().required(),
     })
     .or("caption", "images") // At least one of caption or images must be present
     .custom((value, helpers) => {

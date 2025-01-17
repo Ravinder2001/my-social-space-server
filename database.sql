@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS tbl_posts (
   post_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   user_id INT NOT NULL REFERENCES tbl_users(user_id),
   caption TEXT NOT NULL,
-  post_visibility VARCHAR(50) DEFAULT 'public' CHECK (post_visibility IN ('public', 'private', 'friends')),
+  post_visibility VARCHAR(50) DEFAULT 'PUBLIC' CHECK (post_visibility IN ('PUBLIC', 'PRIVATE', 'FRIENDS')),
   allow_comments BOOLEAN DEFAULT TRUE,
   allow_likes BOOLEAN DEFAULT TRUE,
   is_active BOOLEAN DEFAULT TRUE,
@@ -66,5 +66,34 @@ CREATE TABLE IF NOT EXISTS tbl_files_trash(
   file TEXT NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS tbl_friends (
+  friendship_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  user1_id INT NOT NULL REFERENCES tbl_users(user_id) ON DELETE CASCADE,
+  user2_id INT NOT NULL REFERENCES tbl_users(user_id) ON DELETE CASCADE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE (user1_id, user2_id),
+  CHECK (user1_id <> user2_id) -- Prevent self-friendship
+);
+
+CREATE TABLE IF NOT EXISTS tbl_friend_requests (
+  request_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  sender_id INT NOT NULL REFERENCES tbl_users(user_id) ON DELETE CASCADE,
+  receiver_id INT NOT NULL REFERENCES tbl_users(user_id) ON DELETE CASCADE,
+  status VARCHAR(50) NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING', 'ACCEPTED', 'REJECTED', 'CANCELLED')),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE (sender_id, receiver_id),
+  CHECK (sender_id <> receiver_id) -- Prevent sending requests to oneself
+);
+
+CREATE TABLE IF NOT EXISTS tbl_blocked_users (
+  block_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  user_id INT NOT NULL REFERENCES tbl_users(user_id) ON DELETE CASCADE,
+  blocked_user_id INT NOT NULL REFERENCES tbl_users(user_id) ON DELETE CASCADE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE (user_id, blocked_user_id),
+  CHECK (user_id <> blocked_user_id) -- Prevent self-blocking
+);
+
 
 

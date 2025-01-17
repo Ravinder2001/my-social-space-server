@@ -59,6 +59,7 @@ let Messages = {
   USER_DELETE_FAILED: "Failed to delete user.",
   USER_ALREADY_EXISTS: "User already exists.",
   USER_DEACTIVATED: "Your account is currently deactivated. Please contact the administrator for assistance.",
+  FRIEND_REQ: "Friend request sent successfully.",
 
   // Form Validation
   REQUIRED_FIELD: (field) => `${field} is required.`,

@@ -1,4 +1,5 @@
 const client = require("../configuration/db");
+// const generateTimestamp = require("../utils/common/generateTimestamp");
 
 module.exports = {
   getAllPosts: async (user_id) => {

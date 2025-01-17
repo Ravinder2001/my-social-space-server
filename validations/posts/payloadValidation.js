@@ -15,7 +15,7 @@ module.exports = {
           }),
         }),
       tags: Joi.array().items(Joi.number()).optional(),
-      postVisibility: Joi.string().valid("public", "private", "friends").required(),
+      postVisibility: Joi.string().valid("PUBLIC", "PRIVATE", "FRIENDS").required(),
       allowComments: Joi.boolean().required(),
       allowLikes: Joi.boolean().required(),
     })

@@ -71,6 +71,7 @@ CREATE TABLE IF NOT EXISTS tbl_friends (
   friendship_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   user1_id INT NOT NULL REFERENCES tbl_users(user_id) ON DELETE CASCADE,
   user2_id INT NOT NULL REFERENCES tbl_users(user_id) ON DELETE CASCADE,
+  is_active BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   UNIQUE (user1_id, user2_id),
   CHECK (user1_id <> user2_id) -- Prevent self-friendship

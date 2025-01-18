@@ -80,7 +80,6 @@ CREATE TABLE IF NOT EXISTS tbl_friend_requests (
   request_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   sender_id INT NOT NULL REFERENCES tbl_users(user_id) ON DELETE CASCADE,
   receiver_id INT NOT NULL REFERENCES tbl_users(user_id) ON DELETE CASCADE,
-  status VARCHAR(50) NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING', 'ACCEPTED', 'REJECTED', 'CANCELLED')),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   UNIQUE (sender_id, receiver_id),
   CHECK (sender_id <> receiver_id) -- Prevent sending requests to oneself

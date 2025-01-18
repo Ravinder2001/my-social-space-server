@@ -15,4 +15,24 @@ module.exports = {
       common.handleAsyncError(error, res);
     }
   },
+  acceptFriendReq: async (req, res) => {
+    try {
+      await friendModel.acceptFriendReq({
+        request_id: req.params.request_id,
+      });
+      return common.successResponse(res, Messages.FRIEND_REQ_ACCEPT, HttpStatus.OK);
+    } catch (error) {
+      common.handleAsyncError(error, res);
+    }
+  },
+  deleteFriendReq: async (req, res) => {
+    try {
+      await friendModel.deleteFriendReq({
+        request_id: req.params.request_id,
+      });
+      return common.successResponse(res, Messages.SUCCESS, HttpStatus.OK);
+    } catch (error) {
+      common.handleAsyncError(error, res);
+    }
+  },
 };

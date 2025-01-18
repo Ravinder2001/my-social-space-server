@@ -7,6 +7,7 @@ const { authenticateJWT } = require("../auth");
 const router = express.Router();
 
 router.get("/sendFriendReq/:receiver_id", authenticateJWT, FriendController.sendFriendReq);
-// router.post("/", authenticateJWT, validateBody(schemas.createPostSchema), FriendController.createPost);
+router.get("/acceptFriendReq/:request_id", authenticateJWT, FriendController.acceptFriendReq);
+router.delete("/deleteFriendReq/:request_id", authenticateJWT, FriendController.deleteFriendReq);
 
 module.exports = router;

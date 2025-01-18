@@ -2,64 +2,82 @@ const client = require("../configuration/db");
 // const generateTimestamp = require("../utils/common/generateTimestamp");
 
 module.exports = {
-  getAllPosts: async (user_id) => {
+  getAllPosts: async (values) => {
     try {
       const query = `
+        WITH friend_posts AS (
+          SELECT 
+            p.post_id, 
+            p.user_id, 
+            p.caption, 
+            p.post_visibility, 
+            p.allow_comments, 
+            p.allow_likes, 
+            p.created_at
+          FROM tbl_posts p
+          LEFT JOIN tbl_friends f
+            ON (f.user1_id = p.user_id AND f.user2_id = $1)
+            OR (f.user2_id = p.user_id AND f.user1_id = $1)
+          WHERE p.is_active = TRUE
+            AND (p.post_visibility = 'PUBLIC' OR f.is_active = TRUE)
+        ),
+        likes_count AS (
+          SELECT 
+            post_id, 
+            COUNT(*) AS total_likes
+          FROM tbl_post_likes
+          GROUP BY post_id
+        ),
+        latest_comment AS (
+          SELECT 
+            pc.post_id, 
+            pc.comment_text, 
+            pc.created_at AS comment_created_at
+          FROM tbl_post_comments pc
+          WHERE pc.is_active = TRUE
+          AND pc.comment_id IN (
+            SELECT 
+              MAX(comment_id)
+            FROM tbl_post_comments
+            GROUP BY post_id
+          )
+        ),
+        post_images AS (
+          SELECT 
+            i.post_id, 
+            ARRAY_AGG(i.image_url) AS image_urls,
+            COUNT(i.image_id) AS image_count
+          FROM tbl_post_images i
+          WHERE i.is_active = TRUE
+          GROUP BY i.post_id
+        )
         SELECT 
-          p.post_id,
-          p.caption,
-          p.post_visibility,
-          p.allow_comments,
-          p.allow_likes,
-          p.is_active,
-          p.created_at AS post_created_at,
-          COALESCE(
-            json_agg(
-              DISTINCT jsonb_build_object(
-                'image_id', pi.image_id,
-                'image_url', pi.image_url,
-                'is_active', pi.is_active,
-                'created_at', pi.created_at
-              )
-            ) FILTER (WHERE pi.image_id IS NOT NULL), '[]'
-          ) AS images,
-          COALESCE(
-            json_agg(
-              DISTINCT jsonb_build_object(
-                'tag_id', pt.tag_id,
-                'tag_name', pt.tag_name,
-                'created_at', pt.created_at
-              )
-            ) FILTER (WHERE pt.tag_id IS NOT NULL), '[]'
-          ) AS tags,
-          COALESCE(
-            json_agg(
-              DISTINCT jsonb_build_object(
-                'comment_id', pc.comment_id,
-                'user_id', pc.user_id,
-                'comment_text', pc.comment_text,
-                'is_active', pc.is_active,
-                'created_at', pc.created_at
-              )
-            ) FILTER (WHERE pc.comment_id IS NOT NULL), '[]'
-          ) AS comments,
-          (SELECT COUNT(*) FROM tbl_post_likes pl WHERE pl.post_id = p.post_id) AS like_count
-        FROM 
-          tbl_posts p
-        LEFT JOIN 
-          tbl_post_images pi ON pi.post_id = p.post_id
-        LEFT JOIN 
-          tbl_post_tags pt ON pt.post_id = p.post_id
-        LEFT JOIN 
-          tbl_post_comments pc ON pc.post_id = p.post_id
-        WHERE 
-          p.user_id = $1 AND p.is_active = TRUE
-        GROUP BY 
-          p.post_id
-        ORDER BY 
-          p.created_at DESC;
+          fp.post_id,
+          fp.user_id,
+          fp.caption,
+          fp.post_visibility,
+          fp.allow_comments,
+          fp.allow_likes,
+          fp.created_at,
+          COALESCE(lc.total_likes, 0) AS likes_count,
+          COALESCE(lc2.comment_text, '') AS latest_comment,
+          CASE 
+            WHEN pi.image_count > 2 THEN ARRAY(SELECT unnest(pi.image_urls) LIMIT 2)
+            ELSE pi.image_urls
+          END AS images,
+          CASE 
+            WHEN pi.image_count > 2 THEN pi.image_count - 2
+            ELSE 0
+          END AS remaining_image_count
+        FROM friend_posts fp
+        LEFT JOIN likes_count lc ON fp.post_id = lc.post_id
+        LEFT JOIN latest_comment lc2 ON fp.post_id = lc2.post_id
+        LEFT JOIN post_images pi ON fp.post_id = pi.post_id
+        ORDER BY fp.created_at DESC
+        LIMIT $2 OFFSET $3;
       `;
-      const { rows } = await client.query(query, [user_id]);
+
+      const { rows } = await client.query(query, [values.user_id, values.limit, values.offset]);
       return rows;
     } catch (error) {
       throw new Error(error.message);

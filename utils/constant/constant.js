@@ -58,5 +58,6 @@ module.exports = {
   },
   VARIABLES: {
     REGEX: "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])",
+    TOTAL_POSTS_PER_PAGE: 10,
   },
 };

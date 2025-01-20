@@ -102,9 +102,9 @@ LIMIT $2 OFFSET $3;
       const postValues = [
         postDetails.user_id,
         postDetails.caption || null,
-        postDetails.post_visibility,
-        postDetails.allow_comments,
-        postDetails.allow_likes,
+        postDetails.postVisibility,
+        postDetails.allowComments,
+        postDetails.allowLikes,
         postDetails.isPostScheduled ? false : true, // is_active depends on scheduling
       ];
       const { rows } = await client.query(insertPostQuery, postValues);

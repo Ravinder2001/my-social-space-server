@@ -2,6 +2,7 @@ const bcrypt = require("bcrypt");
 const CryptoJS = require("crypto-js");
 const config = require("../../configuration/config");
 const jwt = require("jsonwebtoken");
+const { generatePreSignedURL } = require("./imageUploadToS3");
 
 const passwordPattern = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,20}$/;
 
@@ -56,6 +57,11 @@ const generatePassword = () => {
   return password;
 };
 
+const generateImageLink = async (imageKey) => {
+  let URL = await generatePreSignedURL(imageKey);
+  return URL;
+};
+
 module.exports = {
   hashPassword,
   isValidPassword,
@@ -63,4 +69,5 @@ module.exports = {
   decryptString,
   decodeJWT,
   generatePassword,
+  generateImageLink,
 };

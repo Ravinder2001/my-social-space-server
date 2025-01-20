@@ -12,10 +12,10 @@ const config = {
     secretKey: process.env.SECRET,
   },
   s3_bucket: {
-    access_key: process.env.ACCESS_KEY,
-    secret_key: process.env.SECRET_KEY,
-    bucket_name: process.env.BUCKET_NAME,
-    bucket_region: process.env.BUCKET_REGION,
+    access_key: process.env.AWS_ACCESS_KEY_ID,
+    secret_key: process.env.AWS_SECRET_ACCESS_KEY,
+    bucket_name: process.env.AWS_BUCKET_NAME,
+    bucket_region: process.env.AWS_REGION,
   },
   cryptR: {
     secret: process.env.CRYPTO_SECRET_KEY,

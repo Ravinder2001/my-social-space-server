@@ -89,7 +89,7 @@ LIMIT $2 OFFSET $3;
       throw new Error(error.message);
     }
   },
-  getPostById:async (values) => {
+  getPostById: async (values) => {
     try {
       // First query to get post details and like count
       const postQuery = `
@@ -114,7 +114,7 @@ LIMIT $2 OFFSET $3;
         GROUP BY 
           p.post_id, u.profile_picture, u.full_name
       `;
-  
+
       // Second query to get all images
       const imagesQuery = `
         SELECT
@@ -124,7 +124,7 @@ LIMIT $2 OFFSET $3;
         WHERE 
           post_id = $1;
       `;
-  
+
       // Third query to get all comments with user details
       const commentsQuery = `
         SELECT 
@@ -142,34 +142,34 @@ LIMIT $2 OFFSET $3;
         ORDER BY 
           pc.created_at DESC;
       `;
-  
+
       // Execute all queries concurrently
       const [postResult, imagesResult, commentsResult] = await Promise.all([
         client.query(postQuery, [values.post_id]),
         client.query(imagesQuery, [values.post_id]),
-        client.query(commentsQuery, [values.post_id])
+        client.query(commentsQuery, [values.post_id]),
       ]);
-  
+
       // If post doesn't exist, return null
       if (postResult.rows.length === 0) {
         return null;
       }
-  
+
       // Construct the final response
       const response = {
         ...postResult.rows[0],
-        images: imagesResult.rows.map(image => image.image_url),
-        comments: commentsResult.rows.map(comment => ({
+        images: imagesResult.rows.map((image) => image.image_url),
+        comments: commentsResult.rows.map((comment) => ({
           comment_id: comment.comment_id,
           comment_text: comment.comment_text,
           created_at: comment.comment_created_at,
           user: {
             username: comment.username,
-            profile_picture: comment.profile_picture
-          }
-        }))
+            profile_picture: comment.profile_picture,
+          },
+        })),
       };
-  
+
       return response;
     } catch (error) {
       throw new Error(error.message);

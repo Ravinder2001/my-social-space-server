@@ -1,5 +1,6 @@
 const client = require("../configuration/db");
 const generateTimestamp = require("../utils/common/generateTimestamp");
+const { removeFilesFromTrash } = require("./upload.model");
 
 module.exports = {
   getAllPosts: async (values) => {
@@ -226,6 +227,8 @@ LIMIT $2 OFFSET $3;
           await client.query(insertTagQuery, [post_id, tag]);
         }
       }
+
+      await removeFilesFromTrash(postDetails.images);
 
       await client.query("COMMIT");
       return { post_id };

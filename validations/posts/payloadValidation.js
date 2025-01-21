@@ -28,4 +28,8 @@ module.exports = {
       }
       return value;
     }, "Custom validation for at least one value"),
+  commentSchema: Joi.object({
+    post_id: Joi.number().required(),
+    comment: Joi.string().required(),
+  }),
 };

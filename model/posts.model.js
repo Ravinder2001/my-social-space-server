@@ -1,5 +1,5 @@
 const client = require("../configuration/db");
-// const generateTimestamp = require("../utils/common/generateTimestamp");
+const generateTimestamp = require("../utils/common/generateTimestamp");
 
 module.exports = {
   getAllPosts: async (values) => {
@@ -89,6 +89,92 @@ LIMIT $2 OFFSET $3;
       throw new Error(error.message);
     }
   },
+  getPostById:async (values) => {
+    try {
+      // First query to get post details and like count
+      const postQuery = `
+        SELECT 
+          p.post_id,
+          u.profile_picture AS post_user_profile_picture,
+          u.full_name AS post_user_name,
+          p.caption,
+          p.allow_comments,
+          p.allow_likes,
+          p.is_active,
+          p.created_at AS post_created_at,
+          COUNT(pl.like_id) AS like_count
+        FROM 
+          tbl_posts p
+        LEFT JOIN 
+          tbl_post_likes pl ON pl.post_id = p.post_id
+        LEFT JOIN
+          tbl_users u ON u.user_id = p.user_id
+        WHERE 
+          p.post_id = $1
+        GROUP BY 
+          p.post_id, u.profile_picture, u.full_name
+      `;
+  
+      // Second query to get all images
+      const imagesQuery = `
+        SELECT
+          image_url
+        FROM 
+          tbl_post_images
+        WHERE 
+          post_id = $1;
+      `;
+  
+      // Third query to get all comments with user details
+      const commentsQuery = `
+        SELECT 
+          pc.comment_id,
+          pc.comment_text,
+          pc.created_at AS comment_created_at,
+          u.full_name AS username,
+          u.profile_picture
+        FROM 
+          tbl_post_comments pc
+        LEFT JOIN 
+          tbl_users u ON u.user_id = pc.user_id
+        WHERE 
+          pc.post_id = $1
+        ORDER BY 
+          pc.created_at DESC;
+      `;
+  
+      // Execute all queries concurrently
+      const [postResult, imagesResult, commentsResult] = await Promise.all([
+        client.query(postQuery, [values.post_id]),
+        client.query(imagesQuery, [values.post_id]),
+        client.query(commentsQuery, [values.post_id])
+      ]);
+  
+      // If post doesn't exist, return null
+      if (postResult.rows.length === 0) {
+        return null;
+      }
+  
+      // Construct the final response
+      const response = {
+        ...postResult.rows[0],
+        images: imagesResult.rows.map(image => image.image_url),
+        comments: commentsResult.rows.map(comment => ({
+          comment_id: comment.comment_id,
+          comment_text: comment.comment_text,
+          created_at: comment.comment_created_at,
+          user: {
+            username: comment.username,
+            profile_picture: comment.profile_picture
+          }
+        }))
+      };
+  
+      return response;
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  },
   createPost: async (postDetails) => {
     try {
       await client.query("BEGIN");
@@ -145,6 +231,36 @@ LIMIT $2 OFFSET $3;
       return { post_id };
     } catch (error) {
       await client.query("ROLLBACK");
+      throw new Error(error.message);
+    }
+  },
+  toggleLikes: async (values) => {
+    try {
+      const query = `
+        WITH deleted AS (
+          DELETE FROM tbl_post_likes 
+          WHERE post_id = $1 AND user_id = $2
+          RETURNING *
+        )
+        INSERT INTO tbl_post_likes (post_id, user_id, created_at)
+        SELECT $1, $2, $3
+        WHERE NOT EXISTS (SELECT 1 FROM deleted);
+      `;
+
+      await client.query(query, [values.post_id, values.user_id, generateTimestamp()]);
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  },
+  addComment: async (values) => {
+    try {
+      const query = `
+        INSERT INTO tbl_post_comments (post_id, user_id, comment_text, created_at)
+        VALUES ($1, $2, $3, $4);
+      `;
+
+      await client.query(query, [values.post_id, values.user_id, values.comment, generateTimestamp()]);
+    } catch (error) {
       throw new Error(error.message);
     }
   },

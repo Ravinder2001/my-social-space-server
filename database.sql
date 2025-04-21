@@ -1,13 +1,12 @@
 CREATE TABLE IF NOT EXISTS tbl_users (
-  user_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,                      -- Unique identifier for each user
-  username VARCHAR(30) UNIQUE NOT NULL,           -- Unique username (30 characters max)
-  email VARCHAR(255) UNIQUE NOT NULL,             -- User email (must be unique)
-  password VARCHAR(255) NOT NULL,            -- Hashed password for security
-  full_name VARCHAR(100) NOT NULL,                         -- User's full name
-  profile_picture TEXT,                       -- URL for the profile picture
-  bio TEXT,                                       -- Short user bio or description
-  date_of_birth DATE,                             -- User's date of birth
-  gender VARCHAR(10) CHECK (gender IN ('M', 'F', 'O')), -- Optional gender field
+  user_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  password VARCHAR(255) NOT NULL,
+  full_name VARCHAR(100) NOT NULL,
+  profile_picture TEXT,
+  bio TEXT,
+  date_of_birth DATE,
+  gender VARCHAR(10) CHECK (gender IN ('M', 'F', 'O')),
   is_active BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -17,6 +16,3 @@ CREATE TABLE IF NOT EXISTS tbl_files_trash(
   file TEXT NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
-
-

@@ -4,6 +4,7 @@ const { HttpStatus } = require("../utils/constant/constant");
 const imageTrashModel = require("../model/upload.model");
 const { generatePreSignedURL, uploadImageToS3, deleteImageFromS3 } = require("../utils/common/imageUploadToS3");
 const Messages = require("../utils/constant/messages");
+const { v4: uuidv4 } = require("uuid");
 
 module.exports = {
   fileUpload: async (req, res) => {
@@ -18,9 +19,8 @@ module.exports = {
       const uploadedImages = [];
 
       for (const image of req.files) {
-        const timestamp = Date.now();
-        const randomDigits = Math.floor(100 + Math.random() * 900);
-        const imageName = `${timestamp}_${randomDigits}_${image.originalname}`;
+        const extension = image.originalname.split(".").pop(); // get file extension
+        const imageName = `${uuidv4()}.${extension}`;
         const imageKey = `${keyPrefix}/${imageName}`;
 
         // Upload image to S3

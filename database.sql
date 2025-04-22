@@ -19,39 +19,39 @@ CREATE TABLE IF NOT EXISTS tbl_files_trash(
 
 -- Table to store post details
 CREATE TABLE IF NOT EXISTS tbl_posts (
-    post_id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL REFERENCES tbl_users(user_id) ON DELETE CASCADE,
-    caption TEXT NOT NULL,
-    visibility VARCHAR(20) NOT NULL CHECK (visibility IN ('PUBLIC', 'PRIVATE', 'FRIENDS')),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+  post_id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES tbl_users(user_id) ON DELETE CASCADE,
+  caption TEXT NOT NULL,
+  visibility VARCHAR(20) NOT NULL CHECK (visibility IN ('PUBLIC', 'PRIVATE', 'FRIENDS')),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Table to store post images
 CREATE TABLE IF NOT EXISTS tbl_post_images (
-    image_id SERIAL PRIMARY KEY,
-    post_id INTEGER NOT NULL REFERENCES tbl_posts(post_id) ON DELETE CASCADE,
-    image_url VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+  image_id SERIAL PRIMARY KEY,
+  post_id INTEGER NOT NULL REFERENCES tbl_posts(post_id) ON DELETE CASCADE,
+  image_url VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Table to store post likes
 CREATE TABLE IF NOT EXISTS tbl_post_likes (
-    like_id SERIAL PRIMARY KEY,
-    post_id INTEGER NOT NULL REFERENCES tbl_posts(post_id) ON DELETE CASCADE,
-    user_id INTEGER NOT NULL REFERENCES tbl_users(user_id) ON DELETE CASCADE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE (post_id, user_id) -- Ensures a user can like a post only once
+  like_id SERIAL PRIMARY KEY,
+  post_id INTEGER NOT NULL REFERENCES tbl_posts(post_id) ON DELETE CASCADE,
+  user_id INTEGER NOT NULL REFERENCES tbl_users(user_id) ON DELETE CASCADE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE (post_id, user_id) -- Ensures a user can like a post only once
 );
 
 -- Table to store comments
 CREATE TABLE IF NOT EXISTS tbl_comments (
-    comment_id SERIAL PRIMARY KEY,
-    post_id INTEGER NOT NULL REFERENCES tbl_posts(post_id) ON DELETE CASCADE,
-    user_id INTEGER NOT NULL REFERENCES tbl_users(user_id) ON DELETE CASCADE,
-    content TEXT NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+  comment_id SERIAL PRIMARY KEY,
+  post_id INTEGER NOT NULL REFERENCES tbl_posts(post_id) ON DELETE CASCADE,
+  user_id INTEGER NOT NULL REFERENCES tbl_users(user_id) ON DELETE CASCADE,
+  content TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Indexes for faster queries
@@ -66,7 +66,7 @@ CREATE TABLE IF NOT EXISTS tbl_friend_requests (
   request_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   sender_id INT NOT NULL,
   receiver_id INT NOT NULL,
-  status VARCHAR(20) NOT NULL CHECK (status IN ('pending', 'accepted', 'rejected')),
+  status VARCHAR(20) NOT NULL CHECK (status IN ('PENDING', 'ACCEPTED', 'REJECTED')),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (sender_id) REFERENCES tbl_users(user_id) ON DELETE CASCADE,

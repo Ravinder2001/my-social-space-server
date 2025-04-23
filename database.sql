@@ -109,3 +109,48 @@ CREATE INDEX idx_friendships_users ON tbl_friendships(user_id_1, user_id_2);
 
 -- Index for faster queries on follows
 CREATE INDEX idx_follows_follower_followed ON tbl_follows(follower_id, followed_id);
+
+CREATE TABLE IF NOT EXISTS tbl_message_channels (
+  channel_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  is_group BOOLEAN DEFAULT FALSE,
+  name VARCHAR(255), -- Only for group chats
+  created_by INT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+  FOREIGN KEY (created_by) REFERENCES tbl_users(user_id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS tbl_channel_participants (
+  channel_id INT NOT NULL,
+  user_id INT NOT NULL,
+  joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+  PRIMARY KEY (channel_id, user_id),
+  FOREIGN KEY (channel_id) REFERENCES tbl_message_channels(channel_id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES tbl_users(user_id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS tbl_messages (
+  message_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  channel_id INT NOT NULL,
+  sender_id INT NOT NULL,
+  message TEXT NOT NULL,
+  sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+  FOREIGN KEY (channel_id) REFERENCES tbl_message_channels(channel_id) ON DELETE CASCADE,
+  FOREIGN KEY (sender_id) REFERENCES tbl_users(user_id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS tbl_channel_seen_status (
+  channel_id INT NOT NULL,
+  user_id INT NOT NULL,
+  seen_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+  PRIMARY KEY (channel_id, user_id),
+  FOREIGN KEY (channel_id) REFERENCES tbl_message_channels(channel_id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES tbl_users(user_id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_messages_channel_id_sent_at ON tbl_messages(channel_id, sent_at);
+CREATE INDEX idx_seen_status_channel_seen ON tbl_channel_seen_status(channel_id, seen_at);
+

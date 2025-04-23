@@ -1,8 +1,6 @@
 const postModel = require("../model/posts.model");
 const asyncHandler = require("../helpers/asyncHandler");
-const OpenAI = require("openai");
-
-const openai = new OpenAI();
+const { CaptionGenerator } = require("../helpers/chatgptHelper");
 
 module.exports = {
   createPost: asyncHandler(async (req) => {
@@ -13,22 +11,11 @@ module.exports = {
     };
   }),
   generateCaption: asyncHandler(async (req) => {
-    const completion = await openai.chat.completions.create({
-      messages: [
-        { role: "system", content: "You are caption generator assistant." },
-        {
-          role: "user",
-          content: `Generate a captivating caption for the following post:${req.body.prompt}.
-                  and the caption should be under 255 words only.`,
-        },
-      ],
-      model: "gpt-3.5-turbo",
-      // max_tokens: 30,
-    });
+    const AICaption = await CaptionGenerator(req.body.prompt);
 
     return {
       message: "Post created successfully",
-      data: completion.choices[0].message.content,
+      data: AICaption,
       status: 201,
     };
   }),

@@ -15,4 +15,7 @@ module.exports = {
   addComment: Joi.object({
     content: Joi.string().max(500).required(),
   }),
+  generateCaption: Joi.object({
+    prompt: Joi.string().max(200).required(),
+  }),
 };

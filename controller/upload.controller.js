@@ -19,7 +19,7 @@ module.exports = {
       const uploadedImages = [];
 
       for (const image of req.files) {
-        const extension = image.originalname.split(".").pop(); // get file extension
+        const extension = image.originalname.split(".").pop();
         const imageName = `${uuidv4()}.${extension}`;
         const imageKey = `${keyPrefix}/${imageName}`;
 

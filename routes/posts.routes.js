@@ -7,6 +7,7 @@ const router = express.Router();
 
 // Create a new post
 router.post("/", validateBody(schemas.createPost), postController.createPost);
+router.post("/generate-caption", validateBody(schemas.generateCaption), postController.generateCaption);
 
 // Delete a post
 router.delete("/:post_id", validatePostId, validatePostOwnership, postController.deletePost);
@@ -24,6 +25,8 @@ router.post("/:post_id/comments", validatePostId, validateBody(schemas.addCommen
 router.delete("/comments/:comment_id", postController.removeComment);
 
 // Get post details
-router.get("/:post_id", validatePostId, postController.getPost);
+router.get("/single/:post_id", validatePostId, postController.getPost);
+router.get("/", postController.getAllPosts);
+router.get("/ownPosts", postController.getAllOwnPosts);
 
 module.exports = router;

@@ -1,4 +1,5 @@
 const client = require("../configuration/db");
+const { removeFilesFromTrash } = require("./upload.model");
 
 module.exports = {
   createPost: async (values) => {
@@ -29,6 +30,7 @@ module.exports = {
         for (const image_url of images) {
           await client.query(imageQuery, [post.post_id, image_url]);
         }
+        await removeFilesFromTrash(images);
       }
 
       await client.query("COMMIT");

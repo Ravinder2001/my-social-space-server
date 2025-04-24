@@ -13,19 +13,24 @@ module.exports = {
       status: 200,
     };
   }),
-  createChannel: asyncHandler(async (req) => {
-    const channel = await chatModel.createChannel({
-      is_group: req.body.is_group || false,
-      name: req.body.name || null,
-      created_by: req.user.user_id,
-    });
+  createChannelWithUsers: asyncHandler(async (req) => {
+    const { is_group, name, user_ids } = req.body;
+    const created_by = req.user.user_id;
+
+    // Step 1: Create channel
+    const channel = await chatModel.createChannel({ is_group, name, created_by });
+
+    // Step 2: Add users (including creator if not in list)
+    const participants = [...new Set([...user_ids, created_by])];
+    await chatModel.addParticipantsToChannel({ channel_id: channel.channel_id, user_ids: participants });
 
     return {
-      message: "Channel created successfully",
+      message: "Channel created and participants added successfully",
       data: channel,
       status: 201,
     };
   }),
+
   addParticipantsToChannel: asyncHandler(async (req) => {
     await chatModel.addParticipantsToChannel({
       channel_id: req.body.channel_id,

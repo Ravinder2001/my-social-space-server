@@ -9,7 +9,7 @@ const router = express.Router();
 router.get("/friends", chatController.getFriendsList);
 
 // Channels
-router.post("/channels", validateBody(schemas.createChannel), chatController.createChannel);
+router.post("/channels", validateBody(schemas.createChannel), chatController.createChannelWithUsers);
 router.post("/channels/participants", validateBody(schemas.addParticipantsToChannel), chatController.addParticipantsToChannel);
 router.get("/channels", chatController.getUserChannels);
 

@@ -6,6 +6,7 @@ const { hashPassword } = require("../utils/common/common");
 const generateUniqueUsername = require("../helpers/generateUsername");
 const { OAuth2Client } = require("google-auth-library");
 const config = require("../configuration/config");
+const { generatePreSignedURL } = require("../utils/common/imageUploadToS3");
 
 const client = new OAuth2Client(config.google.google_client_id);
 
@@ -32,7 +33,8 @@ module.exports = {
       if (!user) {
         return res.status(401).json({ message: Messages.INVALID_CREDS, success: 0 });
       }
-
+      const UserImage = await generatePreSignedURL(user.profile_picture);
+      user.profile_picture = UserImage;
       const token = await common.generateUserToken(user);
 
       return common.successResponse(res, Messages.LOGIN_SUCCESS, HttpStatus.OK, {
@@ -58,6 +60,8 @@ module.exports = {
       if (!user) {
         return res.status(401).json({ message: Messages.USER_NOT_FOUND, success: 0 });
       }
+      const UserImage = await generatePreSignedURL(user.profile_picture);
+      user.profile_picture = UserImage;
 
       const token = await common.generateUserToken(user);
 

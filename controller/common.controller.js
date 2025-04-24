@@ -69,7 +69,8 @@ const generateUserToken = (data) => {
     {
       iss: "my-social-space",
       id: data.user_id,
-      name: data.username,
+      name: data.full_name,
+      profile_picture: data.profile_picture,
       role: USER_TYPES.USER,
       iat: Math.round(new Date().getTime() / 1000),
       // exp: Math.round(new Date().getTime() / 1000) + 24 * 60 * 60,

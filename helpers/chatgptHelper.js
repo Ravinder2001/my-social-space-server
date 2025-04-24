@@ -1,6 +1,9 @@
 const OpenAI = require("openai");
+const { OPENAI_API_KEY } = require("../configuration/config");
 
-const openai = new OpenAI();
+const openai = new OpenAI({
+  apiKey: OPENAI_API_KEY,
+});
 
 const CaptionGenerator = async (prompt) => {
   const completion = await openai.chat.completions.create({

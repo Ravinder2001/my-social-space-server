@@ -1,7 +1,7 @@
 const config = {
   NODE_ENV: process.env.NODE_ENV,
   PORT: process.env.PORT,
-  OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+  OPENAI_API_KEY: process.env.OPENAI_API,
   DB: {
     user: process.env.DB_USER,
     host: process.env.DB_HOST,

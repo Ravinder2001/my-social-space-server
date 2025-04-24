@@ -212,58 +212,48 @@ module.exports = {
     p.post_id,
     p.user_id,
     p.caption,
+    u.full_name AS user_name,
+    u.profile_picture,
     p.visibility,
     p.created_at,
-    p.updated_at,
-    u.username,
     COALESCE(
-        (SELECT jsonb_agg(
-            jsonb_build_object(
-                'image_id', pi.image_id,
-                'image_url', pi.image_url,
-                'created_at', pi.created_at
-            )
-        )
-        FROM tbl_post_images pi
-        WHERE pi.post_id = p.post_id
+        (SELECT jsonb_agg(pi.image_url)
+         FROM tbl_post_images pi
+         WHERE pi.post_id = p.post_id
         ), '[]'::jsonb
-    ) as images,
+    ) AS images,
     (SELECT COUNT(*) 
      FROM tbl_comments c 
      WHERE c.post_id = p.post_id
-    ) as comment_count,
+    ) AS comment_count,
     COALESCE(
         (SELECT COUNT(*) 
          FROM tbl_post_likes pl 
          WHERE pl.post_id = p.post_id
         ), 0
-    ) as like_count,
+    ) AS like_count,
     EXISTS (
         SELECT 1 
         FROM tbl_post_likes pl 
         WHERE pl.post_id = p.post_id 
         AND pl.user_id = $1
-    ) as is_liked,
-    (SELECT jsonb_build_object(
-        'comment_id', c.comment_id,
-        'user_id', c.user_id,
-        'username', cu.username,
-        'content', c.content,
-        'created_at', c.created_at,
-        'updated_at', c.updated_at
-    )
-     FROM tbl_comments c
-     JOIN tbl_users cu ON c.user_id = cu.user_id
-     WHERE c.post_id = p.post_id
-     ORDER BY c.created_at DESC
-     LIMIT 1
-    ) as latest_comment
+    ) AS is_liked,
+    (
+        SELECT jsonb_build_object(
+            'user_name', cu.full_name,
+            'profile_picture', cu.profile_picture,
+            'content', c.content
+        )
+        FROM tbl_comments c
+        JOIN tbl_users cu ON c.user_id = cu.user_id
+        WHERE c.post_id = p.post_id
+        ORDER BY c.created_at DESC
+        LIMIT 1
+    ) AS latest_comment
 FROM tbl_posts p
 JOIN tbl_users u ON p.user_id = u.user_id
 WHERE 
-    -- User's own posts (PUBLIC or FRIENDS)
     (p.user_id = $1 AND p.visibility IN ('PUBLIC', 'FRIENDS'))
-    -- Friends' posts with FRIENDS visibility
     OR (p.visibility = 'FRIENDS' 
         AND EXISTS (
             SELECT 1 
@@ -271,9 +261,8 @@ WHERE
             WHERE (f.user_id_1 = $1 AND f.user_id_2 = p.user_id)
                OR (f.user_id_2 = $1 AND f.user_id_1 = p.user_id)
         ))
-    -- Any PUBLIC posts
     OR p.visibility = 'PUBLIC'
-ORDER BY p.created_at DESC;
+ORDER BY p.created_at DESC;  
         `,
         [user_id]
       );

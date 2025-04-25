@@ -7,12 +7,12 @@ module.exports = {
 
       const query = `
         INSERT INTO tbl_users 
-        (username, email, password, full_name, gender) 
-        VALUES ($1, $2, $3, $4, $5)
-        RETURNING user_id, username;
+        (username, email, password, full_name, gender, profile_picture) 
+        VALUES ($1, $2, $3, $4, $5, $6)
+        RETURNING *;
       `;
 
-      const params = [username, email, password, full_name, gender];
+      const params = [username, email, password, full_name, gender, "USER-1/23732644-cb9b-43ab-ac72-5e6e9eb2eea0.png"];
 
       const result = await client.query(query, params);
 

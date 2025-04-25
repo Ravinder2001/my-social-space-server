@@ -18,9 +18,15 @@ module.exports = {
 
       let hashedPassword = await hashPassword(req.body.password);
 
-      await userModel.register({ ...req.body, password: hashedPassword, username: username });
+      const response = await userModel.register({ ...req.body, password: hashedPassword, username: username });
 
-      return common.successResponse(res, Messages.USER_REGISTER_SUCCESS, HttpStatus.OK);
+      const UserImage = await generatePreSignedURL(response.profile_picture);
+      response.profile_picture = UserImage;
+      const token = await common.generateUserToken(response);
+
+      return common.successResponse(res, Messages.LOGIN_SUCCESS, HttpStatus.OK, {
+        token,
+      });
     } catch (error) {
       common.handleAsyncError(error, res);
     }

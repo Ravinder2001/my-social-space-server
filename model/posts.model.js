@@ -204,6 +204,7 @@ module.exports = {
       throw error;
     }
   },
+
   getAllPosts: async (user_id) => {
     try {
       const postResults = await client.query(
@@ -238,6 +239,12 @@ module.exports = {
         WHERE pl.post_id = p.post_id 
         AND pl.user_id = $1
     ) AS is_liked,
+    EXISTS (
+        SELECT 1
+        FROM tbl_saved_posts sp
+        WHERE sp.post_id = p.post_id
+        AND sp.user_id = $1
+    ) AS is_saved,
     (
         SELECT jsonb_build_object(
             'user_name', cu.full_name,
@@ -262,7 +269,7 @@ WHERE
                OR (f.user_id_2 = $1 AND f.user_id_1 = p.user_id)
         ))
     OR p.visibility = 'PUBLIC'
-ORDER BY p.created_at DESC;  
+ORDER BY p.created_at DESC; 
         `,
         [user_id]
       );
@@ -273,6 +280,7 @@ ORDER BY p.created_at DESC;
       throw error;
     }
   },
+
   getAllOwnPosts: async (user_id) => {
     try {
       const postResults = await client.query(
@@ -343,6 +351,7 @@ ORDER BY p.created_at DESC;
       throw error;
     }
   },
+
   getComments: async (user_id) => {
     try {
       const postResults = await client.query(
@@ -367,6 +376,46 @@ ORDER BY p.created_at DESC;
       return postResults.rows;
     } catch (error) {
       console.error("Error in getting post:", error.message);
+      throw error;
+    }
+  },
+
+  toggleSave: async (post_id, user_id) => {
+    try {
+      // Check if post is already saved
+      const checkQuery = `
+        SELECT saved_post_id 
+        FROM tbl_saved_posts 
+        WHERE post_id = $1 AND user_id = $2;
+      `;
+      const checkResult = await client.query(checkQuery, [post_id, user_id]);
+
+      if (checkResult.rows.length > 0) {
+        // Post is already saved, remove it
+        const deleteQuery = `
+          DELETE FROM tbl_saved_posts 
+          WHERE post_id = $1 AND user_id = $2
+          RETURNING saved_post_id;
+        `;
+        await client.query(deleteQuery, [post_id, user_id]);
+        return {
+          message: "Post unsaved successfully",
+        };
+      } else {
+        // Post is not saved yet, save it
+        const insertQuery = `
+          INSERT INTO tbl_saved_posts 
+          (post_id, user_id) 
+          VALUES ($1, $2)
+          RETURNING saved_post_id, post_id, user_id;
+        `;
+        await client.query(insertQuery, [post_id, user_id]);
+        return {
+          message: "Post saved successfully",
+        };
+      }
+    } catch (error) {
+      console.error("Error in toggling save:", error.message);
       throw error;
     }
   },

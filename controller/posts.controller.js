@@ -143,4 +143,13 @@ module.exports = {
       status: 200,
     };
   }),
+
+  toggleSave: asyncHandler(async (req) => {
+    const { post_id } = req.params;
+    const result = await postModel.toggleSave(post_id, req.user.user_id);
+    return {
+      message: result.message,
+      status: 200,
+    };
+  }),
 };

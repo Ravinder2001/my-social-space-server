@@ -154,3 +154,18 @@ CREATE TABLE IF NOT EXISTS tbl_channel_seen_status (
 CREATE INDEX idx_messages_channel_id_sent_at ON tbl_messages(channel_id, sent_at);
 CREATE INDEX idx_seen_status_channel_seen ON tbl_channel_seen_status(channel_id, seen_at);
 
+
+CREATE TABLE IF NOT EXISTS tbl_saved_posts (
+  saved_post_id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES tbl_users(user_id) ON DELETE CASCADE,
+  post_id INTEGER NOT NULL REFERENCES tbl_posts(post_id) ON DELETE CASCADE,
+  saved_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(user_id, post_id) -- prevents a user from saving the same post multiple times
+);
+
+-- To quickly find all posts saved by a user
+CREATE INDEX idx_saved_posts_user_id ON tbl_saved_posts(user_id);
+-- To quickly find all users who saved a particular post
+CREATE INDEX idx_saved_posts_post_id ON tbl_saved_posts(post_id);
+
+

@@ -16,10 +16,10 @@ router.delete("/:post_id", validatePostId, validatePostOwnership, postController
 router.put("/:post_id", validatePostId, validatePostOwnership, validateBody(schemas.editPost), postController.editPost);
 
 // Toggle like on a post
-router.get("/:post_id/like", validatePostId, postController.toggleLike);
+router.get("/toggleLike/:post_id", validatePostId, postController.toggleLike);
 
 // Add a comment to a post
-router.post("/:post_id/comments", validatePostId, validateBody(schemas.addComment), postController.addComment);
+router.post("/comments/:post_id", validatePostId, validateBody(schemas.addComment), postController.addComment);
 
 // Remove a comment
 router.delete("/comments/:comment_id", postController.removeComment);
@@ -28,5 +28,6 @@ router.delete("/comments/:comment_id", postController.removeComment);
 router.get("/single/:post_id", validatePostId, postController.getPost);
 router.get("/", postController.getAllPosts);
 router.get("/ownPosts", postController.getAllOwnPosts);
+router.get("/comments/:post_id", postController.getComments);
 
 module.exports = router;

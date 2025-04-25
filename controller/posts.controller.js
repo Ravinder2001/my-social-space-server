@@ -55,7 +55,7 @@ module.exports = {
 
   addComment: asyncHandler(async (req) => {
     const { post_id } = req.params;
-    await postModel.addComment({
+    const cmtData = await postModel.addComment({
       post_id,
       user_id: req.user.user_id,
       ...req.body,
@@ -63,6 +63,7 @@ module.exports = {
     return {
       message: "Comment added successfully",
       status: 201,
+      data: cmtData,
     };
   }),
 
@@ -123,6 +124,22 @@ module.exports = {
     return {
       message: "Post retrieved successfully",
       data: post,
+      status: 200,
+    };
+  }),
+  getComments: asyncHandler(async (req) => {
+    const comments = await postModel.getComments(req.params.post_id);
+    const updatedPosts = await Promise.all(
+      comments.map(async (post) => {
+        if (post.profile_picture) {
+          post.profile_picture = await generatePreSignedURL(post.profile_picture);
+        }
+        return post;
+      })
+    );
+    return {
+      message: "Comments retrieved successfully",
+      data: updatedPosts,
       status: 200,
     };
   }),

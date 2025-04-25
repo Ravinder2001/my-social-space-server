@@ -132,12 +132,12 @@ module.exports = {
         INSERT INTO tbl_comments 
         (post_id, user_id, content) 
         VALUES ($1, $2, $3)
-        RETURNING comment_id, post_id, user_id, content, created_at;
+        RETURNING comment_id, created_at;
       `;
       const params = [post_id, user_id, content];
-      await client.query(query, params);
+      const cmtData = await client.query(query, params);
 
-      return;
+      return cmtData.rows[0];
     } catch (error) {
       console.error("Error in adding comment:", error.message);
       throw error;
@@ -333,6 +333,33 @@ WHERE
     p.user_id = $1
     AND p.visibility IN ('PUBLIC', 'FRIENDS', 'PRIVATE')
 ORDER BY p.created_at DESC;
+        `,
+        [user_id]
+      );
+
+      return postResults.rows;
+    } catch (error) {
+      console.error("Error in getting post:", error.message);
+      throw error;
+    }
+  },
+  getComments: async (user_id) => {
+    try {
+      const postResults = await client.query(
+        `
+        SELECT
+        c.comment_id,
+        u.full_name as user_name,
+        u.profile_picture,
+        c.content,
+        c.created_at
+        FROM
+        tbl_comments c
+        LEFT JOIN tbl_users u ON u.user_id = c.user_id
+        WHERE
+        post_id = $1
+        ORDER BY
+        c.created_at DESC;
         `,
         [user_id]
       );

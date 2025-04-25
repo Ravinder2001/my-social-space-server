@@ -5,7 +5,8 @@ CREATE TABLE IF NOT EXISTS tbl_users (
   full_name VARCHAR(100) NOT NULL,
   profile_picture TEXT,
   bio TEXT,
-  date_of_birth DATE,
+  city VARCHAR(100),
+  website VARCHAR(255),
   gender VARCHAR(10) CHECK (gender IN ('M', 'F', 'O')),
   is_active BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

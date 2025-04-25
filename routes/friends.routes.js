@@ -31,5 +31,6 @@ router.get("/followers", friendController.getFollowers);
 
 // Get following list
 router.get("/following", friendController.getFollowing);
+router.get("/searchUsers", friendController.searchUsers);
 
 module.exports = router;

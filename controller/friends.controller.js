@@ -1,5 +1,6 @@
 const friendModel = require("../model/friends.model");
 const asyncHandler = require("../helpers/asyncHandler");
+const { generatePreSignedURL } = require("../utils/common/imageUploadToS3");
 
 module.exports = {
   sendFriendRequest: asyncHandler(async (req) => {
@@ -109,6 +110,23 @@ module.exports = {
     return {
       message: "Following retrieved successfully",
       data: following,
+      status: 200,
+    };
+  }),
+
+  searchUsers: asyncHandler(async (req) => {
+    const usersList = await friendModel.searchUsers(req.query.name);
+    const updatedUsers = await Promise.all(
+      usersList.map(async (post) => {
+        if (post.profile_picture) {
+          post.profile_picture = await generatePreSignedURL(post.profile_picture);
+        }
+        return post;
+      })
+    );
+    return {
+      message: "Users list retrieved successfully",
+      data: updatedUsers,
       status: 200,
     };
   }),

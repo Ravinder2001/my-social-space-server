@@ -197,4 +197,31 @@ module.exports = {
       throw error;
     }
   },
+  searchUsers: async (searchQuery) => {
+    try {
+      // Check if the query has at least 3 characters
+      if (!searchQuery || searchQuery.trim().length < 3) {
+        return []; // Return empty array if too short
+      }
+
+      const query = `
+        SELECT 
+          user_id, 
+          full_name as user_name, 
+          profile_picture
+        FROM tbl_users
+        WHERE LOWER(full_name) LIKE LOWER($1)
+        ORDER BY full_name
+        LIMIT 20;
+      `;
+
+      const values = [`%${searchQuery.trim()}%`];
+
+      const result = await client.query(query, values);
+      return result.rows;
+    } catch (error) {
+      console.error("Error searching users:", error.message);
+      throw error;
+    }
+  },
 };

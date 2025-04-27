@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS tbl_users (
   password VARCHAR(255) NOT NULL,
   full_name VARCHAR(100) NOT NULL,
   profile_picture TEXT,
+  cover_picture TEXT,
   bio TEXT,
   city VARCHAR(100),
   website VARCHAR(255),

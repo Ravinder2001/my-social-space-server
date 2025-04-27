@@ -119,14 +119,6 @@ module.exports = {
     };
   }),
 
-  getAllOwnPosts: asyncHandler(async (req) => {
-    const post = await postModel.getAllOwnPosts(req.user.user_id);
-    return {
-      message: "Post retrieved successfully",
-      data: post,
-      status: 200,
-    };
-  }),
   getComments: asyncHandler(async (req) => {
     const comments = await postModel.getComments(req.params.post_id);
     const updatedPosts = await Promise.all(

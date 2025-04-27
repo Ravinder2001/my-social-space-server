@@ -2,7 +2,7 @@ const common = require("../controller/common.controller");
 const asyncHandler = (fn) => async (req, res, next) => {
   try {
     const result = await fn(req, res, next);
-    return common.successResponse(res, result.message || "Operation successful", result.status || 200, result.data);
+    return common.successResponse(res, result.message || "Operation successful", result.status || 200, result.data, result?.data?.length);
   } catch (error) {
     return common.handleAsyncError(error, res);
   }

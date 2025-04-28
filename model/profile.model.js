@@ -1,5 +1,5 @@
 const client = require("../configuration/db");
-// const { removeFilesFromTrash } = require("./upload.model");
+const { removeFilesFromTrash } = require("./upload.model");
 
 module.exports = {
   getAllPosts: async (user_id) => {
@@ -137,6 +137,87 @@ ORDER BY sp.saved_at DESC;
       return postResults.rows;
     } catch (error) {
       console.error("Error in getting saved posts:", error.message);
+      throw error;
+    }
+  },
+  getProfileDetails: async (user_id) => {
+    try {
+      const profileDetails = await client.query(
+        `
+        SELECT
+        username,
+        full_name,
+        profile_picture,
+        cover_picture,
+        bio,
+        city,
+        website,
+        created_at
+        FROM
+        tbl_users
+        WHERE
+        user_id = $1
+        `,
+        [user_id]
+      );
+
+      return profileDetails.rows[0];
+    } catch (error) {
+      console.error("Error in editing profile details:", error.message);
+      throw error;
+    }
+  },
+  editProfileDetails: async (values) => {
+    try {
+      await client.query("BEGIN");
+      const { user_id, ...fieldsToUpdate } = values;
+
+      // Build SET clause dynamically
+      const setClauses = [];
+      const queryValues = [];
+      let idx = 1;
+
+      for (const key in fieldsToUpdate) {
+        if (fieldsToUpdate[key] !== undefined) {
+          setClauses.push(`${key} = $${idx}`);
+          queryValues.push(fieldsToUpdate[key]);
+          idx++;
+        }
+      }
+
+      if (setClauses.length === 0) {
+        throw new Error("No fields provided to update.");
+      }
+
+      queryValues.push(user_id); // For WHERE clause
+
+      const query = `
+        UPDATE tbl_users
+        SET ${setClauses.join(", ")}
+        WHERE user_id = $${idx}
+        RETURNING user_id, username, full_name, profile_picture, cover_picture, bio, city, website;
+      `;
+
+      const postResults = await client.query(query, queryValues);
+
+      // Handle removing files from trash if needed
+      const imagesToRemove = [];
+      if (fieldsToUpdate.profile_picture) {
+        imagesToRemove.push(fieldsToUpdate.profile_picture);
+      }
+      if (fieldsToUpdate.cover_picture) {
+        imagesToRemove.push(fieldsToUpdate.cover_picture);
+      }
+
+      if (imagesToRemove.length > 0) {
+        await removeFilesFromTrash(imagesToRemove);
+      }
+
+      await client.query("COMMIT");
+      return postResults.rows[0];
+    } catch (error) {
+      await client.query("ROLLBACK");
+      console.error("Error in editing profile details:", error.message);
       throw error;
     }
   },

@@ -18,12 +18,19 @@
 const db = require("../../../configuration/db");
 const { HttpStatus } = require("../../constant/constant");
 
-const dbValidationForDuplicate = async (value, tbl_name, column_name) => {
+const dbValidationForDuplicate = async (value, tbl_name, column_name, customCondition = "") => {
   if (!value || value === "null") {
     return HttpStatus.BAD_REQUEST;
   }
   try {
-    const result = await db.query(`SELECT * FROM ${tbl_name} WHERE ${column_name} ILIKE $1`, [value]);
+    let query = `SELECT * FROM ${tbl_name} WHERE ${column_name} ILIKE $1`;
+    let queryValues = [value];
+
+    if (customCondition) {
+      query += ` AND ${customCondition}`;
+    }
+
+    const result = await db.query(query, queryValues);
     if (result.rows.length > 0) {
       return HttpStatus.ALREADY_EXISTS;
     }
@@ -32,4 +39,5 @@ const dbValidationForDuplicate = async (value, tbl_name, column_name) => {
     throw new Error(error.message);
   }
 };
+
 module.exports = dbValidationForDuplicate;

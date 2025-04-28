@@ -68,4 +68,38 @@ module.exports = {
       status: 200,
     };
   }),
+  getProfileDetails: asyncHandler(async (req) => {
+    const posts = await postModel.getProfileDetails(req.user.user_id);
+
+    if (posts.profile_picture) {
+      posts.profile_picture = await generatePreSignedURL(posts.profile_picture);
+    }
+    if (posts.cover_picture) {
+      posts.cover_picture = await generatePreSignedURL(posts.cover_picture);
+    }
+
+    return {
+      message: "Post retrieved successfully",
+      data: posts,
+      status: 200,
+    };
+  }),
+
+  editProfileDetails: asyncHandler(async (req) => {
+    await postModel.editProfileDetails({
+      ...req.body,
+      user_id: req.user.user_id,
+    });
+
+    return {
+      message: "Post details updated successfully",
+      status: 200,
+    };
+  }),
+  validateUsername: asyncHandler(async () => {
+    return {
+      message: "This username is available.",
+      status: 200,
+    };
+  }),
 };

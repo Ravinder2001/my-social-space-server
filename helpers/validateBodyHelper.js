@@ -18,6 +18,12 @@ const validateBody = (schema) => {
         }
         return common.errorResponse(res, err_msg, HttpStatus.BAD_REQUEST);
       }
+
+      // 🔥 Add this check for at least one field
+      if (!value || Object.keys(value).length === 0) {
+        return common.errorResponse(res, "At least one field must be provided in the body.", HttpStatus.BAD_REQUEST);
+      }
+
       if (!req.value) {
         req.value = {};
       }

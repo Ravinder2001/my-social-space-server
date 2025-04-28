@@ -4,7 +4,12 @@ const { generatePreSignedURL } = require("../utils/common/imageUploadToS3");
 
 module.exports = {
   getAllPosts: asyncHandler(async (req) => {
-    const posts = await postModel.getAllPosts(req.user.user_id);
+    let posts;
+    if (!req.query.user_id) {
+      posts = await postModel.getAllPosts(req.user.user_id);
+    } else {
+      posts = await postModel.getAnotherUserAllPosts(req.user.user_id, req.query.user_id);
+    }
     const updatedPosts = await Promise.all(
       posts.map(async (post) => {
         // Replace user's profile_picture with signed URL
@@ -36,7 +41,13 @@ module.exports = {
   }),
 
   getAllPhotos: asyncHandler(async (req) => {
-    const posts = await postModel.getAllPhotos(req.user.user_id);
+    let posts;
+
+    if (!req.query.user_id) {
+      posts = await postModel.getAllPhotos(req.user.user_id);
+    } else {
+      posts = await postModel.getAnotherUserAllPhotos(req.user.user_id, req.query.user_id);
+    }
     const updatedPosts = await Promise.all(
       posts.map(async (post) => {
         if (post.image) {
@@ -69,7 +80,7 @@ module.exports = {
     };
   }),
   getProfileDetails: asyncHandler(async (req) => {
-    const posts = await postModel.getProfileDetails(req.user.user_id);
+    const posts = await postModel.getProfileDetails(req.query.user_id ?? req.user.user_id);
 
     if (posts.profile_picture) {
       posts.profile_picture = await generatePreSignedURL(posts.profile_picture);

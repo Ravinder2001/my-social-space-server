@@ -14,23 +14,12 @@ router.put("/requests/:request_id", validateBody(schemas.respondFriendRequest), 
 // Remove a friend
 router.delete("/friends/:friend_id", friendController.removeFriend);
 
-// Follow a user
-router.post("/follow", validateBody(schemas.followUser), friendController.followUser);
-
-// Unfollow a user
-router.delete("/follow/:followed_id", friendController.unfollowUser);
-
 // Get friend requests (PENDING by default, can specify status via query)
 router.get("/requests", friendController.getFriendRequests);
 
 // Get friends list
 router.get("/friends", friendController.getFriends);
 
-// Get followers list
-router.get("/followers", friendController.getFollowers);
-
-// Get following list
-router.get("/following", friendController.getFollowing);
 router.get("/searchUsers", friendController.searchUsers);
 
 module.exports = router;

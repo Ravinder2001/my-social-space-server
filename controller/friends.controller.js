@@ -43,31 +43,6 @@ module.exports = {
     };
   }),
 
-  followUser: asyncHandler(async (req) => {
-    const follow = await friendModel.followUser({
-      follower_id: req.user.user_id,
-      followed_id: req.body.followed_id,
-    });
-    return {
-      message: "Followed successfully",
-      data: follow,
-      status: 201,
-    };
-  }),
-
-  unfollowUser: asyncHandler(async (req) => {
-    const { followed_id } = req.params;
-    const result = await friendModel.unfollowUser({
-      follower_id: req.user.user_id,
-      followed_id,
-    });
-    return {
-      message: result.message,
-      data: { follow_id: result.follow_id },
-      status: 200,
-    };
-  }),
-
   getFriendRequests: asyncHandler(async (req) => {
     const { status = "PENDING" } = req.query;
     const requests = await friendModel.getFriendRequests({
@@ -92,30 +67,8 @@ module.exports = {
     };
   }),
 
-  getFollowers: asyncHandler(async (req) => {
-    const followers = await friendModel.getFollowers({
-      user_id: req.user.user_id,
-    });
-    return {
-      message: "Followers retrieved successfully",
-      data: followers,
-      status: 200,
-    };
-  }),
-
-  getFollowing: asyncHandler(async (req) => {
-    const following = await friendModel.getFollowing({
-      user_id: req.user.user_id,
-    });
-    return {
-      message: "Following retrieved successfully",
-      data: following,
-      status: 200,
-    };
-  }),
-
   searchUsers: asyncHandler(async (req) => {
-    const usersList = await friendModel.searchUsers(req.query.name);
+    const usersList = await friendModel.searchUsers(req.query.name, req.user.user_id);
     const updatedUsers = await Promise.all(
       usersList.map(async (post) => {
         if (post.profile_picture) {

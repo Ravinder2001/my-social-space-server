@@ -158,7 +158,7 @@ CREATE INDEX idx_messages_channel_id_sent_at ON tbl_messages(channel_id, sent_at
 CREATE INDEX idx_seen_status_channel_seen ON tbl_channel_seen_status(channel_id, seen_at);
 
 
-CREATE TABLE IF NOT EXISTS tbl_saved_posts (
+CREATE TABLE IF NOT EXISTS tbl_saved_posts (  
   saved_post_id SERIAL PRIMARY KEY,
   user_id INTEGER NOT NULL REFERENCES tbl_users(user_id) ON DELETE CASCADE,
   post_id INTEGER NOT NULL REFERENCES tbl_posts(post_id) ON DELETE CASCADE,

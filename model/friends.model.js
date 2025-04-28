@@ -78,44 +78,6 @@ module.exports = {
     }
   },
 
-  followUser: async ({ follower_id, followed_id }) => {
-    try {
-      const query = `
-        INSERT INTO tbl_follows (follower_id, followed_id)
-        VALUES ($1, $2)
-        RETURNING follow_id, follower_id, followed_id, created_at;
-      `;
-      const params = [follower_id, followed_id];
-      const result = await client.query(query, params);
-
-      return result.rows[0];
-    } catch (error) {
-      console.error("Error in following user:", error.message);
-      throw error;
-    }
-  },
-
-  unfollowUser: async ({ follower_id, followed_id }) => {
-    try {
-      const query = `
-        DELETE FROM tbl_follows 
-        WHERE follower_id = $1 AND followed_id = $2
-        RETURNING follow_id;
-      `;
-      const params = [follower_id, followed_id];
-      const result = await client.query(query, params);
-
-      if (result.rows.length === 0) {
-        throw new Error("Follow relationship not found");
-      }
-
-      return { follow_id: result.rows[0].follow_id, message: "Unfollowed successfully" };
-    } catch (error) {
-      console.error("Error in unfollowing user:", error.message);
-      throw error;
-    }
-  },
-
   getFriendRequests: async ({ user_id, status = "PENDING" }) => {
     try {
       const query = `
@@ -160,62 +122,57 @@ module.exports = {
     }
   },
 
-  getFollowers: async ({ user_id }) => {
+  searchUsers: async (searchQuery, currentUserId) => {
     try {
-      const query = `
-        SELECT f.follow_id, f.follower_id, u.full_name as follower_name, 
-               u.profile_picture as follower_picture, f.created_at
-        FROM tbl_follows f
-        JOIN tbl_users u ON f.follower_id = u.user_id
-        WHERE f.followed_id = $1;
-      `;
-      const params = [user_id];
-      const result = await client.query(query, params);
+      let query;
+      let values;
 
-      return result.rows;
-    } catch (error) {
-      console.error("Error in getting followers:", error.message);
-      throw error;
-    }
-  },
-
-  getFollowing: async ({ user_id }) => {
-    try {
-      const query = `
-        SELECT f.follow_id, f.followed_id, u.full_name as followed_name, 
-               u.profile_picture as followed_picture, f.created_at
-        FROM tbl_follows f
-        JOIN tbl_users u ON f.followed_id = u.user_id
-        WHERE f.follower_id = $1;
-      `;
-      const params = [user_id];
-      const result = await client.query(query, params);
-
-      return result.rows;
-    } catch (error) {
-      console.error("Error in getting following:", error.message);
-      throw error;
-    }
-  },
-  searchUsers: async (searchQuery) => {
-    try {
-      // Check if the query has at least 3 characters
-      if (!searchQuery || searchQuery.trim().length < 3) {
-        return []; // Return empty array if too short
+      if (searchQuery && searchQuery.trim().length >= 3) {
+        query = `
+          SELECT 
+            u.user_id, 
+            u.full_name AS user_name, 
+            u.profile_picture,
+            u.bio,
+            CASE
+              WHEN f.friendship_id IS NOT NULL THEN true
+              ELSE false
+            END AS "isFriend"
+          FROM tbl_users u
+          LEFT JOIN tbl_friendships f
+            ON (
+              (f.user_id_1 = u.user_id AND f.user_id_2 = $2) OR
+              (f.user_id_2 = u.user_id AND f.user_id_1 = $2)
+            )
+          WHERE LOWER(u.full_name) LIKE LOWER($1)
+            AND u.user_id != $2
+          ORDER BY u.full_name
+          LIMIT 20;
+        `;
+        values = [`%${searchQuery.trim()}%`, currentUserId];
+      } else {
+        query = `
+          SELECT 
+            u.user_id, 
+            u.full_name AS user_name, 
+            u.profile_picture,
+            u.bio,
+            CASE
+              WHEN f.friendship_id IS NOT NULL THEN true
+              ELSE false
+            END AS "isFriend"
+          FROM tbl_users u
+          LEFT JOIN tbl_friendships f
+            ON (
+              (f.user_id_1 = u.user_id AND f.user_id_2 = $1) OR
+              (f.user_id_2 = u.user_id AND f.user_id_1 = $1)
+            )
+          WHERE u.user_id != $1
+          ORDER BY u.created_at DESC
+          LIMIT 6;
+        `;
+        values = [currentUserId];
       }
-
-      const query = `
-        SELECT 
-          user_id, 
-          full_name as user_name, 
-          profile_picture
-        FROM tbl_users
-        WHERE LOWER(full_name) LIKE LOWER($1)
-        ORDER BY full_name
-        LIMIT 20;
-      `;
-
-      const values = [`%${searchQuery.trim()}%`];
 
       const result = await client.query(query, values);
       return result.rows;

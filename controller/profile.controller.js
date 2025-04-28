@@ -99,6 +99,9 @@ module.exports = {
   validateUsername: asyncHandler(async () => {
     return {
       message: "This username is available.",
+      data: {
+        available: true,
+      },
       status: 200,
     };
   }),

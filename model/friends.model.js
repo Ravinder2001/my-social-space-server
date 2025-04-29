@@ -134,16 +134,20 @@ module.exports = {
             u.full_name AS user_name, 
             u.profile_picture,
             u.bio,
-            CASE
-              WHEN f.friendship_id IS NOT NULL THEN true
-              ELSE false
-            END AS "isFriend"
+            EXISTS (
+              SELECT 1 FROM tbl_friendships f
+              WHERE 
+                (f.user_id_1 = u.user_id AND f.user_id_2 = $2) OR
+                (f.user_id_2 = u.user_id AND f.user_id_1 = $2)
+            ) AS "isFriend",
+            EXISTS (
+              SELECT 1 FROM tbl_friend_requests fr
+              WHERE 
+                fr.sender_id = $2
+                AND fr.receiver_id = u.user_id
+                AND fr.status = 'PENDING'
+            ) AS "isRequested"
           FROM tbl_users u
-          LEFT JOIN tbl_friendships f
-            ON (
-              (f.user_id_1 = u.user_id AND f.user_id_2 = $2) OR
-              (f.user_id_2 = u.user_id AND f.user_id_1 = $2)
-            )
           WHERE LOWER(u.full_name) LIKE LOWER($1)
             AND u.user_id != $2
           ORDER BY u.full_name
@@ -157,16 +161,20 @@ module.exports = {
             u.full_name AS user_name, 
             u.profile_picture,
             u.bio,
-            CASE
-              WHEN f.friendship_id IS NOT NULL THEN true
-              ELSE false
-            END AS "isFriend"
+            EXISTS (
+              SELECT 1 FROM tbl_friendships f
+              WHERE 
+                (f.user_id_1 = u.user_id AND f.user_id_2 = $1) OR
+                (f.user_id_2 = u.user_id AND f.user_id_1 = $1)
+            ) AS "isFriend",
+            EXISTS (
+              SELECT 1 FROM tbl_friend_requests fr
+              WHERE 
+                fr.sender_id = $1
+                AND fr.receiver_id = u.user_id
+                AND fr.status = 'PENDING'
+            ) AS "isRequested"
           FROM tbl_users u
-          LEFT JOIN tbl_friendships f
-            ON (
-              (f.user_id_1 = u.user_id AND f.user_id_2 = $1) OR
-              (f.user_id_2 = u.user_id AND f.user_id_1 = $1)
-            )
           WHERE u.user_id != $1
           ORDER BY u.created_at DESC
           LIMIT 6;

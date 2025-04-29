@@ -50,14 +50,20 @@ module.exports = {
   }),
 
   getFriendRequests: asyncHandler(async (req) => {
-    const { status = "PENDING" } = req.query;
     const requests = await friendModel.getFriendRequests({
       user_id: req.user.user_id,
-      status,
     });
+    const updatedUsers = await Promise.all(
+      requests.map(async (post) => {
+        if (post.sender_picture) {
+          post.sender_picture = await generatePreSignedURL(post.sender_picture);
+        }
+        return post;
+      })
+    );
     return {
       message: "Friend requests retrieved successfully",
-      data: requests,
+      data: updatedUsers,
       status: 200,
     };
   }),

@@ -77,9 +77,7 @@ module.exports = {
         user_id: cmtData.post_admin_id,
         type: "COMMENT",
         post_id,
-        details: {
-          user_id: req.user.user_id,
-        },
+        another_user_id: req.user.user_id,
       });
     }
     return {

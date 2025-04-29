@@ -82,16 +82,19 @@ module.exports = {
     }
   },
 
-  getFriendRequests: async ({ user_id, status = "PENDING" }) => {
+  getFriendRequests: async ({ user_id }) => {
     try {
       const query = `
-        SELECT fr.request_id, fr.sender_id, fr.receiver_id, fr.status, fr.created_at, fr.updated_at,
-               u.full_name as sender_name, u.profile_picture as sender_picture
+        SELECT 
+        fr.request_id,
+        fr.created_at,
+        u.full_name as sender_name, 
+        u.profile_picture as sender_picture
         FROM tbl_friend_requests fr
         JOIN tbl_users u ON fr.sender_id = u.user_id
-        WHERE fr.receiver_id = $1 AND fr.status = $2;
+        WHERE fr.receiver_id = $1;
       `;
-      const params = [user_id, status];
+      const params = [user_id];
       const result = await client.query(query, params);
 
       return result.rows;

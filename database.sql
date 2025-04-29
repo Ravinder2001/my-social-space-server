@@ -184,7 +184,7 @@ CREATE TABLE IF NOT EXISTS tbl_notifications (
     )
   ),
   post_id INT,
-  details JSONB DEFAULT NULL
+  another_user_id INT,
   is_read BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 

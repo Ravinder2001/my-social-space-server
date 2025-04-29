@@ -12,7 +12,7 @@ router.post("/requests", validateBody(schemas.sendFriendRequest), friendControll
 router.put("/requests/:request_id", validateBody(schemas.respondFriendRequest), friendController.respondFriendRequest);
 
 // Remove a friend
-router.delete("/friends/:friend_id", friendController.removeFriend);
+router.delete("/friends/:friendship_id", friendController.removeFriend);
 
 // Get friend requests (PENDING by default, can specify status via query)
 router.get("/requests", friendController.getFriendRequests);

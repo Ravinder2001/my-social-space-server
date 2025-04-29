@@ -38,14 +38,13 @@ module.exports = {
   }),
 
   removeFriend: asyncHandler(async (req) => {
-    const { friend_id } = req.params;
-    const result = await friendModel.removeFriend({
+    const { friendship_id } = req.params;
+    await friendModel.removeFriend({
       user_id: req.user.user_id,
-      friend_id,
+      friendship_id,
     });
     return {
-      message: result.message,
-      data: { friendship_id: result.friendship_id },
+      message: "Friend Removed Successfully",
       status: 200,
     };
   }),
@@ -73,9 +72,17 @@ module.exports = {
     const friends = await friendModel.getFriends({
       user_id: req.user.user_id,
     });
+    const updatedUsers = await Promise.all(
+      friends.map(async (post) => {
+        if (post.friend_picture) {
+          post.friend_picture = await generatePreSignedURL(post.friend_picture);
+        }
+        return post;
+      })
+    );
     return {
       message: "Friends retrieved successfully",
-      data: friends,
+      data: updatedUsers,
       status: 200,
     };
   }),

@@ -69,21 +69,15 @@ module.exports = {
       throw error;
     }
   },
-  removeFriend: async ({ user_id, friend_id }) => {
+  removeFriend: async ({ friendship_id }) => {
     try {
       const query = `
         DELETE FROM tbl_friendships 
-        WHERE (user_id_1 = $1 AND user_id_2 = $2) OR (user_id_1 = $2 AND user_id_2 = $1)
-        RETURNING friendship_id;
+        WHERE friendship_id = $1
       `;
-      const params = [Math.min(user_id, friend_id), Math.max(user_id, friend_id)];
-      const result = await client.query(query, params);
+      await client.query(query, [friendship_id]);
 
-      if (result.rows.length === 0) {
-        throw new Error("Friendship not found");
-      }
-
-      return { friendship_id: result.rows[0].friendship_id, message: "Friend removed successfully" };
+      return;
     } catch (error) {
       console.error("Error in removing friend:", error.message);
       throw error;
@@ -115,14 +109,11 @@ module.exports = {
   getFriends: async ({ user_id }) => {
     try {
       const query = `
-        SELECT f.friendship_id, 
-               CASE 
-                 WHEN f.user_id_1 = $1 THEN f.user_id_2 
-                 ELSE f.user_id_1 
-               END as friend_id,
-               u.full_name as friend_name,
-               u.profile_picture as friend_picture,
-               f.created_at
+        SELECT 
+          f.friendship_id, 
+          u.full_name as friend_name,
+          u.profile_picture as friend_picture,
+          f.created_at
         FROM tbl_friendships f
         JOIN tbl_users u ON (f.user_id_1 = u.user_id OR f.user_id_2 = u.user_id)
         WHERE (f.user_id_1 = $1 OR f.user_id_2 = $1) AND u.user_id != $1;

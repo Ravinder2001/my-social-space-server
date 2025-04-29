@@ -6,7 +6,7 @@ module.exports = {
       const query = `
         INSERT INTO tbl_friend_requests (sender_id, receiver_id, status)
         VALUES ($1, $2, 'PENDING')
-        RETURNING request_id, sender_id, receiver_id, status, created_at;
+        RETURNING request_id
       `;
       const params = [sender_id, receiver_id];
       const result = await client.query(query, params);
@@ -22,14 +22,13 @@ module.exports = {
     try {
       await client.query("BEGIN");
 
-      const requestQuery = `
-        UPDATE tbl_friend_requests 
-        SET status = $1, updated_at = CURRENT_TIMESTAMP
-        WHERE request_id = $2 AND receiver_id = $3
-        RETURNING request_id, sender_id, receiver_id, status;
+      const fetchRequestQuery = `
+        SELECT request_id, sender_id, receiver_id 
+        FROM tbl_friend_requests 
+        WHERE request_id = $1 AND receiver_id = $2
       `;
-      const requestParams = [status, request_id, user_id];
-      const requestResult = await client.query(requestQuery, requestParams);
+      const fetchRequestParams = [request_id, user_id];
+      const requestResult = await client.query(fetchRequestQuery, fetchRequestParams);
 
       if (requestResult.rows.length === 0) {
         throw new Error("Friend request not found or user not authorized");
@@ -44,19 +43,24 @@ module.exports = {
           RETURNING friendship_id, user_id_1, user_id_2, created_at;
         `;
         const friendshipParams = [Math.min(request.sender_id, request.receiver_id), Math.max(request.sender_id, request.receiver_id)];
-        const friendshipResult = await client.query(friendshipQuery, friendshipParams);
-        request.friendship = friendshipResult.rows[0];
+        await client.query(friendshipQuery, friendshipParams);
       }
 
+      const deleteQuery = `
+        DELETE FROM tbl_friend_requests 
+        WHERE request_id = $1 AND receiver_id = $2
+      `;
+      await client.query(deleteQuery, fetchRequestParams);
+
       await client.query("COMMIT");
-      return request;
+
+      return;
     } catch (error) {
       await client.query("ROLLBACK");
       console.error("Error in responding to friend request:", error.message);
       throw error;
     }
   },
-
   removeFriend: async ({ user_id, friend_id }) => {
     try {
       const query = `

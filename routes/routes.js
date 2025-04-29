@@ -8,6 +8,7 @@ const postRouter = require("./posts.routes");
 const friendRouter = require("./friends.routes");
 const chatRouter = require("./chat.routes");
 const profileRouter = require("./profile.routes");
+const notificationRouter = require("./notification.routes");
 
 router.use("/user", usersRouter);
 router.use("/upload", uploadRouter);
@@ -15,5 +16,6 @@ router.use("/post", authenticateJWT, postRouter);
 router.use("/friend", authenticateJWT, friendRouter);
 router.use("/chat", authenticateJWT, chatRouter);
 router.use("/profile", authenticateJWT, profileRouter);
+router.use("/notifications", authenticateJWT, notificationRouter);
 
 module.exports = router;

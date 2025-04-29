@@ -2,10 +2,12 @@ const postModel = require("../model/posts.model");
 const asyncHandler = require("../helpers/asyncHandler");
 const { CaptionGenerator } = require("../helpers/chatgptHelper");
 const { generatePreSignedURL } = require("../utils/common/imageUploadToS3");
+const { createNotification } = require("../model/notification.model");
 
 module.exports = {
   createPost: asyncHandler(async (req) => {
     await postModel.createPost({ ...req.body, user_id: req.user.user_id });
+
     return {
       message: "Post created successfully",
       status: 201,
@@ -47,6 +49,15 @@ module.exports = {
   toggleLike: asyncHandler(async (req) => {
     const { post_id } = req.params;
     const result = await postModel.toggleLike(post_id, req.user.user_id);
+
+    if (result.isLiked && result.post_admin_id != req.user.user_id) {
+      await createNotification({
+        user_id: result.post_admin_id,
+        type: "LIKE",
+        post_id,
+      });
+    }
+
     return {
       message: result.message,
       status: 200,
@@ -60,6 +71,17 @@ module.exports = {
       user_id: req.user.user_id,
       ...req.body,
     });
+
+    if (cmtData.post_admin_id != req.user.user_id) {
+      await createNotification({
+        user_id: cmtData.post_admin_id,
+        type: "COMMENT",
+        post_id,
+        details: {
+          user_id: req.user.user_id,
+        },
+      });
+    }
     return {
       message: "Comment added successfully",
       status: 201,

@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS tbl_files_trash(
 
 -- Table to store post details
 CREATE TABLE IF NOT EXISTS tbl_posts (
-  post_id SERIAL PRIMARY KEY,
+  post_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   user_id INTEGER NOT NULL REFERENCES tbl_users(user_id) ON DELETE CASCADE,
   caption TEXT NOT NULL,
   visibility VARCHAR(20) NOT NULL CHECK (visibility IN ('PUBLIC', 'PRIVATE', 'FRIENDS')),
@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS tbl_posts (
 
 -- Table to store post images
 CREATE TABLE IF NOT EXISTS tbl_post_images (
-  image_id SERIAL PRIMARY KEY,
+  image_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   post_id INTEGER NOT NULL REFERENCES tbl_posts(post_id) ON DELETE CASCADE,
   image_url VARCHAR(255) NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS tbl_post_images (
 
 -- Table to store post likes
 CREATE TABLE IF NOT EXISTS tbl_post_likes (
-  like_id SERIAL PRIMARY KEY,
+  like_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   post_id INTEGER NOT NULL REFERENCES tbl_posts(post_id) ON DELETE CASCADE,
   user_id INTEGER NOT NULL REFERENCES tbl_users(user_id) ON DELETE CASCADE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS tbl_post_likes (
 
 -- Table to store comments
 CREATE TABLE IF NOT EXISTS tbl_comments (
-  comment_id SERIAL PRIMARY KEY,
+  comment_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   post_id INTEGER NOT NULL REFERENCES tbl_posts(post_id) ON DELETE CASCADE,
   user_id INTEGER NOT NULL REFERENCES tbl_users(user_id) ON DELETE CASCADE,
   content TEXT NOT NULL,
@@ -159,7 +159,7 @@ CREATE INDEX idx_seen_status_channel_seen ON tbl_channel_seen_status(channel_id,
 
 
 CREATE TABLE IF NOT EXISTS tbl_saved_posts (  
-  saved_post_id SERIAL PRIMARY KEY,
+  saved_post_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   user_id INTEGER NOT NULL REFERENCES tbl_users(user_id) ON DELETE CASCADE,
   post_id INTEGER NOT NULL REFERENCES tbl_posts(post_id) ON DELETE CASCADE,
   saved_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -171,4 +171,27 @@ CREATE INDEX idx_saved_posts_user_id ON tbl_saved_posts(user_id);
 -- To quickly find all users who saved a particular post
 CREATE INDEX idx_saved_posts_post_id ON tbl_saved_posts(post_id);
 
+CREATE TABLE IF NOT EXISTS tbl_notifications (
+  notification_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES tbl_users(user_id) ON DELETE CASCADE,
+  type VARCHAR(50) NOT NULL CHECK (
+    type IN (
+      'LIKE', 
+      'COMMENT', 
+      'FRIEND_REQUEST', 
+      'FRIEND_ACCEPTED', 
+      'SYSTEM'
+    )
+  ),
+  post_id INT,
+  details JSONB DEFAULT NULL
+  is_read BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
+  FOREIGN KEY (post_id) REFERENCES tbl_posts(post_id) ON DELETE CASCADE
+);
+
+-- For fast retrieval of notifications per user
+CREATE INDEX idx_notifications_receiver_id ON tbl_notifications(user_id);
+-- For checking unread notifications quickly
+CREATE INDEX idx_notifications_is_read ON tbl_notifications(user_id, is_read);

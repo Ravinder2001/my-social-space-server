@@ -1,6 +1,7 @@
 const friendModel = require("../model/friends.model");
 const asyncHandler = require("../helpers/asyncHandler");
 const { generatePreSignedURL } = require("../utils/common/imageUploadToS3");
+const { createNotification } = require("../model/notification.model");
 
 module.exports = {
   sendFriendRequest: asyncHandler(async (req) => {
@@ -8,9 +9,15 @@ module.exports = {
       sender_id: req.user.user_id,
       receiver_id: req.body.receiver_id,
     });
+
+    await createNotification({
+      user_id: req.body.receiver_id,
+      type: "FRIEND_REQUEST",
+      request_id: request.request_id,
+    });
+
     return {
       message: "Friend request sent successfully",
-      data: request,
       status: 201,
     };
   }),
@@ -18,14 +25,13 @@ module.exports = {
   respondFriendRequest: asyncHandler(async (req) => {
     const { request_id } = req.params;
     const { status } = req.body;
-    const request = await friendModel.respondFriendRequest({
+    await friendModel.respondFriendRequest({
       request_id,
       user_id: req.user.user_id,
       status,
     });
     return {
       message: `Friend request ${status}`,
-      data: request,
       status: 200,
     };
   }),

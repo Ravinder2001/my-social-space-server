@@ -86,6 +86,8 @@ module.exports = {
 
   toggleLike: async (post_id, user_id) => {
     try {
+      const postDetails = await client.query(`SELECT user_id from tbl_posts WHERE post_id = $1`, [post_id]);
+
       // Check if like exists
       const checkQuery = `
         SELECT like_id 
@@ -104,6 +106,7 @@ module.exports = {
         await client.query(deleteQuery, [post_id, user_id]);
         return {
           message: "Like removed successfully",
+          isLiked: false,
         };
       } else {
         // Like doesn't exist, add it
@@ -115,6 +118,8 @@ module.exports = {
         `;
         await client.query(insertQuery, [post_id, user_id]);
         return {
+          post_admin_id: postDetails.rows[0].user_id,
+          isLiked: true,
           message: "Like added successfully",
         };
       }
@@ -127,17 +132,17 @@ module.exports = {
   addComment: async (values) => {
     try {
       const { post_id, user_id, content } = values;
+      const postDetails = await client.query(`SELECT user_id from tbl_posts WHERE post_id = $1`, [post_id]);
 
       const query = `
         INSERT INTO tbl_comments 
         (post_id, user_id, content) 
-        VALUES ($1, $2, $3)
-        RETURNING comment_id, created_at;
+        VALUES ($1, $2, $3);
       `;
       const params = [post_id, user_id, content];
-      const cmtData = await client.query(query, params);
+      await client.query(query, params);
 
-      return cmtData.rows[0];
+      return { post_admin_id: postDetails.rows[0].user_id };
     } catch (error) {
       console.error("Error in adding comment:", error.message);
       throw error;

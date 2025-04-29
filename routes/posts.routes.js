@@ -29,5 +29,6 @@ router.get("/single/:post_id", validatePostId, postController.getPost);
 router.get("/", postController.getAllPosts);
 router.get("/comments/:post_id", postController.getComments);
 router.get("/toggleSave/:post_id", validatePostId, postController.toggleSave);
+router.get("/publicPosts", postController.getAllPublicPosts);
 
 module.exports = router;

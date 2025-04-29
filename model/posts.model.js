@@ -353,4 +353,42 @@ ORDER BY p.created_at DESC;
       throw error;
     }
   },
+
+  getAllPublicPosts: async () => {
+    try {
+      const postRes = await client.query(
+        `SELECT 
+          p.post_id,
+          p.caption,
+          p.created_at,
+          u.full_name,
+          u.profile_picture,
+          img.image_url,
+          COUNT(DISTINCT l.like_id) AS likes_count,
+          COUNT(DISTINCT c.comment_id) AS comments_count
+        FROM tbl_posts p
+        JOIN tbl_users u ON p.user_id = u.user_id
+        -- Only include posts with at least one image
+        INNER JOIN LATERAL (
+          SELECT image_url
+          FROM tbl_post_images
+          WHERE post_id = p.post_id
+          ORDER BY created_at ASC
+          LIMIT 1
+        ) img ON true
+        LEFT JOIN tbl_post_likes l ON p.post_id = l.post_id
+        LEFT JOIN tbl_comments c ON p.post_id = c.post_id
+        WHERE p.visibility = 'PUBLIC'
+        GROUP BY 
+          p.post_id, p.caption, p.visibility, p.created_at,
+          u.user_id, u.full_name, u.profile_picture,
+          img.image_url
+        ORDER BY p.created_at DESC;`
+      );
+      return postRes.rows;
+    } catch (error) {
+      console.error("Error in toggling save:", error.message);
+      throw error;
+    }
+  },
 };

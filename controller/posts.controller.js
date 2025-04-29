@@ -164,4 +164,23 @@ module.exports = {
       status: 200,
     };
   }),
+  getAllPublicPosts: asyncHandler(async () => {
+    const result = await postModel.getAllPublicPosts();
+    const updatedPosts = await Promise.all(
+      result.map(async (post) => {
+        if (post.profile_picture) {
+          post.profile_picture = await generatePreSignedURL(post.profile_picture);
+        }
+        if (post.image_url) {
+          post.image_url = await generatePreSignedURL(post.image_url);
+        }
+        return post;
+      })
+    );
+    return {
+      message: "Public posts retrieved successfully",
+      data: updatedPosts,
+      status: 200,
+    };
+  }),
 };

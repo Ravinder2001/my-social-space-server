@@ -35,26 +35,34 @@ module.exports = {
       }
 
       const request = requestResult.rows[0];
+      const user1 = Math.min(request.sender_id, request.receiver_id);
+      const user2 = Math.max(request.sender_id, request.receiver_id);
 
       if (status === "ACCEPTED") {
-        const friendshipQuery = `
-          INSERT INTO tbl_friendships (user_id_1, user_id_2)
-          VALUES ($1, $2)
-          RETURNING friendship_id, user_id_1, user_id_2, created_at;
+        // Check if friendship already exists
+        const checkFriendshipQuery = `
+          SELECT friendship_id FROM tbl_friendships 
+          WHERE user_id_1 = $1 AND user_id_2 = $2
         `;
-        const friendshipParams = [Math.min(request.sender_id, request.receiver_id), Math.max(request.sender_id, request.receiver_id)];
-        await client.query(friendshipQuery, friendshipParams);
+        const existing = await client.query(checkFriendshipQuery, [user1, user2]);
+
+        if (existing.rows.length === 0) {
+          // Only insert if it doesn't already exist
+          const insertFriendshipQuery = `
+            INSERT INTO tbl_friendships (user_id_1, user_id_2)
+            VALUES ($1, $2)
+          `;
+          await client.query(insertFriendshipQuery, [user1, user2]);
+        }
       }
 
-      const deleteQuery = `
+      const deleteRequestQuery = `
         DELETE FROM tbl_friend_requests 
         WHERE request_id = $1 AND receiver_id = $2
       `;
-      await client.query(deleteQuery, fetchRequestParams);
+      await client.query(deleteRequestQuery, fetchRequestParams);
 
       await client.query("COMMIT");
-
-      return;
     } catch (error) {
       await client.query("ROLLBACK");
       console.error("Error in responding to friend request:", error.message);

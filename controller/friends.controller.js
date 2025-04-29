@@ -14,6 +14,7 @@ module.exports = {
       user_id: req.body.receiver_id,
       type: "FRIEND_REQUEST",
       request_id: request.request_id,
+      another_user_id: req.user.user_id,
     });
 
     return {

@@ -6,6 +6,7 @@ module.exports = {
       const query = `
         SELECT
           n.notification_id,
+          n.is_read,
           n.created_at,
           u.profile_picture,
           CASE

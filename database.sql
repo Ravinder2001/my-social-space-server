@@ -195,3 +195,18 @@ CREATE TABLE IF NOT EXISTS tbl_notifications (
 CREATE INDEX idx_notifications_receiver_id ON tbl_notifications(user_id);
 -- For checking unread notifications quickly
 CREATE INDEX idx_notifications_is_read ON tbl_notifications(user_id, is_read);
+
+CREATE TABLE IF NOT EXISTS tbl_stories (
+  story_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  user_id INT NOT NULL REFERENCES tbl_users(user_id) ON DELETE CASCADE,
+  media_url TEXT NOT NULL,
+  media_type VARCHAR(10) CHECK (media_type IN ('IMAGE', 'VIDEO')) DEFAULT 'IMAGE',
+  song_name TEXT,
+  song_start_time DECIMAL, -- in seconds
+  song_end_time DECIMAL,   -- in seconds
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  expires_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP + INTERVAL '24 HOURS')
+);
+
+CREATE INDEX idx_stories_user_id ON tbl_stories(user_id);
+CREATE INDEX idx_stories_expiry ON tbl_stories(expires_at);

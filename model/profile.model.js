@@ -275,18 +275,24 @@ ORDER BY sp.saved_at DESC;
       const profileDetails = await client.query(
         `
         SELECT
-        username,
-        full_name,
-        profile_picture,
-        cover_picture,
-        bio,
-        city,
-        website,
-        created_at
+            u.username,
+            u.full_name,
+            u.profile_picture,
+            u.cover_picture,
+            u.bio,
+            u.city,
+            u.website,
+            u.created_at,
+            (SELECT COUNT(*) FROM tbl_posts p WHERE p.user_id = u.user_id) AS post_count,
+            (
+              SELECT COUNT(*) FROM tbl_friendships f 
+              WHERE f.user_id_1 = u.user_id OR f.user_id_2 = u.user_id
+            ) AS friends_count
         FROM
-        tbl_users
+            tbl_users u
         WHERE
-        user_id = $1
+            u.user_id = $1;
+
         `,
         [user_id]
       );

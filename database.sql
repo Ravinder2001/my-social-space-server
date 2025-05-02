@@ -199,6 +199,7 @@ CREATE INDEX idx_notifications_is_read ON tbl_notifications(user_id, is_read);
 CREATE TABLE IF NOT EXISTS tbl_stories (
   story_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   user_id INT NOT NULL REFERENCES tbl_users(user_id) ON DELETE CASCADE,
+  caption TEXT,
   media_url TEXT NOT NULL,
   media_type VARCHAR(10) CHECK (media_type IN ('IMAGE', 'VIDEO')) DEFAULT 'IMAGE',
   song_name TEXT,

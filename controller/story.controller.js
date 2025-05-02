@@ -33,8 +33,12 @@ module.exports = {
         if (story.media_url) {
           story.media_url = await generatePreSignedURL(story.media_url);
         }
+        if (story.profile_picture) {
+          story.profile_picture = await generatePreSignedURL(story.profile_picture);
+        }
         if (story.user_id == req.user.user_id) {
           story.ownStory = true;
+          story.user_name = "You";
         }
         delete story.user_id;
         return story;

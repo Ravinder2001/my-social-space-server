@@ -2,6 +2,7 @@ const Joi = require("joi");
 
 module.exports = {
   createStory: Joi.object({
+    caption: Joi.string().optional().allow(""),
     media_url: Joi.string().required().messages({
       "string.base": "Media URL must be a string",
       "any.required": "Media URL is required",

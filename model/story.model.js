@@ -3,15 +3,15 @@ const { removeFilesFromTrash } = require("./upload.model");
 
 module.exports = {
   // Add a new story
-  addStory: async ({ user_id, media_url, media_type = "IMAGE", song_name = null, song_start_time = null, song_end_time = null }) => {
+  addStory: async ({ user_id, caption, media_url, media_type = "IMAGE", song_name = null, song_start_time = null, song_end_time = null }) => {
     try {
       const result = await client.query(
         `
-        INSERT INTO tbl_stories (user_id, media_url, media_type, song_name, song_start_time, song_end_time)
-        VALUES ($1, $2, $3, $4, $5, $6)
+        INSERT INTO tbl_stories (user_id,caption, media_url, media_type, song_name, song_start_time, song_end_time)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
         RETURNING *;
         `,
-        [user_id, media_url, media_type, song_name, song_start_time, song_end_time]
+        [user_id, caption, media_url, media_type, song_name, song_start_time, song_end_time]
       );
       await removeFilesFromTrash([media_url]);
       return result.rows[0];
@@ -29,6 +29,8 @@ module.exports = {
         SELECT 
           s.story_id,
           s.user_id,
+          u.full_name AS user_name,
+          u.profile_picture,
           s.media_url,
           s.media_type,
           s.song_name,
@@ -36,6 +38,7 @@ module.exports = {
           s.song_end_time,
           s.created_at
         FROM tbl_stories s
+        JOIN tbl_users u ON s.user_id = u.user_id
         WHERE 
           s.expires_at > NOW()
           AND (

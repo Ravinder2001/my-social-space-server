@@ -5,6 +5,7 @@ module.exports = {
   getFriendsList: asyncHandler(async (req) => {
     const friends = await chatModel.getFriendsList({
       user_id: req.user.user_id,
+      searchQuery: req.query.searchQuery || null,
     });
 
     return {

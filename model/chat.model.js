@@ -1,16 +1,25 @@
 const client = require("../configuration/db");
 
 module.exports = {
-  getFriendsList: async ({ user_id }) => {
+  getFriendsList: async ({ user_id, searchQuery }) => {
     try {
       const query = `
-        SELECT u.user_id, u.full_name, u.email, u.profile_picture
-        FROM tbl_friendships f
-        JOIN tbl_users u ON (u.user_id = f.user_id_1 OR u.user_id = f.user_id_2)
-        WHERE (f.user_id_1 = $1 OR f.user_id_2 = $1)
+        SELECT 
+          u.user_id,
+          u.full_name,
+          u.profile_picture
+        FROM 
+          tbl_users u
+        JOIN 
+          tbl_friendships f 
+          ON (u.user_id = f.user_id_1 AND f.user_id_2 = $1)
+           OR (u.user_id = f.user_id_2 AND f.user_id_1 = $1)
+        WHERE 
+          (u.full_name ILIKE '%' || $2 || '%' OR u.username ILIKE '%' || $2 || '%')
           AND u.user_id != $1;
+
       `;
-      const result = await client.query(query, [user_id]);
+      const result = await client.query(query, [user_id, searchQuery]);
       return result.rows;
     } catch (error) {
       console.error("Error fetching friend list:", error.message);

@@ -6,7 +6,7 @@ const chatController = require("../controller/chat.controller");
 const router = express.Router();
 
 // Friends
-router.get("/friends", chatController.getFriendsList);
+router.get("/searchFriends", chatController.getFriendsList);
 
 // Channels
 router.post("/channels", validateBody(schemas.createChannel), chatController.createChannelWithUsers);

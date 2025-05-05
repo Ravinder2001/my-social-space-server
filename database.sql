@@ -91,18 +91,6 @@ CREATE TABLE IF NOT EXISTS tbl_friendships (
   CONSTRAINT ordered_users CHECK (user_id_1 < user_id_2)
 );
 
--- Table for following/followers (unidirectional relationships)
-CREATE TABLE IF NOT EXISTS tbl_follows (
-  follow_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  follower_id INT NOT NULL,
-  followed_id INT NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (follower_id) REFERENCES tbl_users(user_id) ON DELETE CASCADE,
-  FOREIGN KEY (followed_id) REFERENCES tbl_users(user_id) ON DELETE CASCADE,
-  UNIQUE (follower_id, followed_id),
-  CONSTRAINT no_self_follow CHECK (follower_id != followed_id)
-);
-
 -- Index for faster queries on friend requests
 CREATE INDEX idx_friend_requests_sender_receiver ON tbl_friend_requests(sender_id, receiver_id);
 CREATE INDEX idx_friend_requests_status ON tbl_friend_requests(status);
@@ -110,8 +98,6 @@ CREATE INDEX idx_friend_requests_status ON tbl_friend_requests(status);
 -- Index for faster queries on friendships
 CREATE INDEX idx_friendships_users ON tbl_friendships(user_id_1, user_id_2);
 
--- Index for faster queries on follows
-CREATE INDEX idx_follows_follower_followed ON tbl_follows(follower_id, followed_id);
 
 CREATE TABLE IF NOT EXISTS tbl_message_channels (
   channel_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,

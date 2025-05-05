@@ -4,22 +4,36 @@ module.exports = {
   getFriendsList: async ({ user_id, searchQuery }) => {
     try {
       const query = `
-        SELECT 
-          u.user_id,
-          u.full_name,
-          u.profile_picture
-        FROM 
-          tbl_users u
-        JOIN 
-          tbl_friendships f 
-          ON (u.user_id = f.user_id_1 AND f.user_id_2 = $1)
-           OR (u.user_id = f.user_id_2 AND f.user_id_1 = $1)
-        WHERE 
-          (u.full_name ILIKE '%' || $2 || '%' OR u.username ILIKE '%' || $2 || '%')
-          AND u.user_id != $1;
-
-      `;
-      const result = await client.query(query, [user_id, searchQuery]);
+          WITH user_friends AS (
+            SELECT 
+              u.user_id,
+              u.full_name as name,
+              u.username,
+              u.profile_picture,
+              f.created_at
+            FROM 
+              tbl_users u
+            JOIN 
+              tbl_friendships f 
+              ON (u.user_id = f.user_id_1 AND f.user_id_2 = $1)
+               OR (u.user_id = f.user_id_2 AND f.user_id_1 = $1)
+            WHERE 
+              u.user_id != $1
+          )
+          SELECT 
+            user_id,
+            name,
+            profile_picture
+          FROM user_friends
+          WHERE 
+            ($2 != '' AND (name ILIKE '%' || $2 || '%' OR username ILIKE '%' || $2 || '%'))
+             OR ($2 = '')
+          ORDER BY 
+            created_at
+          LIMIT 
+            CASE WHEN $2 = '' THEN 5 ELSE NULL END;
+`;
+      const result = await client.query(query, [user_id, searchQuery ?? ""]);
       return result.rows;
     } catch (error) {
       console.error("Error fetching friend list:", error.message);
@@ -56,31 +70,29 @@ module.exports = {
       throw error;
     }
   },
-  sendMessage: async ({ channel_id, sender_id, message }) => {
+  sendMessage: async (values) => {
     try {
       const query = `
-        INSERT INTO tbl_messages (channel_id, sender_id, message)
-        VALUES ($1, $2, $3)
-        RETURNING message_id, channel_id, sender_id, message, sent_at;
+        INSERT INTO tbl_messages (channel_id, sender_id, message, content_type)
+        VALUES ($1, $2, $3, $4)
+        RETURNING message_id, sent_at;
       `;
-      const result = await client.query(query, [channel_id, sender_id, message]);
+      const result = await client.query(query, [values.channel_id, values.sender_id, values.message, values.content_type]);
       return result.rows[0];
     } catch (error) {
       console.error("Error sending message:", error.message);
       throw error;
     }
   },
-  getMessages: async ({ channel_id, after = null }) => {
+  getMessages: async ({ channel_id }) => {
     try {
       const query = `
-        SELECT m.*, u.full_name, u.profile_picture
+        SELECT m.message_id, m.sender_id, m.message, m.sent_at, m.content_type
         FROM tbl_messages m
-        JOIN tbl_users u ON m.sender_id = u.user_id
         WHERE m.channel_id = $1
-          ${after ? "AND m.sent_at > $2" : ""}
         ORDER BY m.sent_at ASC;
       `;
-      const params = after ? [channel_id, after] : [channel_id];
+      const params = [channel_id];
       const result = await client.query(query, params);
       return result.rows;
     } catch (error) {
@@ -105,10 +117,32 @@ module.exports = {
   getUserChannels: async ({ user_id }) => {
     try {
       const query = `
-        SELECT c.channel_id, c.name, c.is_group, c.created_at
+        SELECT 
+          c.channel_id,
+          CASE 
+            WHEN c.is_group THEN c.name 
+            ELSE u.full_name 
+          END AS channel_name,
+          CASE 
+            WHEN c.is_group THEN NULL 
+            ELSE u.profile_picture 
+          END AS profile_picture,
+          m.message AS last_message,
+          m.content_type,
+          COALESCE(m.sent_at, c.created_at) AS sent_at
         FROM tbl_message_channels c
         JOIN tbl_channel_participants p ON c.channel_id = p.channel_id
-        WHERE p.user_id = $1;
+        LEFT JOIN tbl_channel_participants op ON op.channel_id = c.channel_id AND op.user_id != $1
+        LEFT JOIN tbl_users u ON u.user_id = op.user_id
+        LEFT JOIN LATERAL (
+            SELECT m1.message, m1.content_type, m1.sent_at
+            FROM tbl_messages m1
+            WHERE m1.channel_id = c.channel_id
+            ORDER BY m1.sent_at DESC
+            LIMIT 1
+        ) m ON true
+        WHERE p.user_id = $1
+        ORDER BY COALESCE(m.sent_at, c.created_at) DESC;
       `;
       const result = await client.query(query, [user_id]);
       return result.rows;

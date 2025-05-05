@@ -1,5 +1,6 @@
 const chatModel = require("../model/chat.model");
 const asyncHandler = require("../helpers/asyncHandler");
+const { generatePreSignedURL } = require("../utils/common/imageUploadToS3");
 
 module.exports = {
   getFriendsList: asyncHandler(async (req) => {
@@ -7,10 +8,17 @@ module.exports = {
       user_id: req.user.user_id,
       searchQuery: req.query.searchQuery || null,
     });
-
+    const updatedUsers = await Promise.all(
+      friends.map(async (post) => {
+        if (post.profile_picture) {
+          post.profile_picture = await generatePreSignedURL(post.profile_picture);
+        }
+        return post;
+      })
+    );
     return {
       message: "Friend list fetched successfully",
-      data: friends,
+      data: updatedUsers,
       status: 200,
     };
   }),
@@ -45,9 +53,8 @@ module.exports = {
   }),
   sendMessage: asyncHandler(async (req) => {
     const message = await chatModel.sendMessage({
-      channel_id: req.body.channel_id,
+      ...req.body,
       sender_id: req.user.user_id,
-      message: req.body.message,
     });
 
     return {
@@ -59,12 +66,26 @@ module.exports = {
   getMessages: asyncHandler(async (req) => {
     const messages = await chatModel.getMessages({
       channel_id: req.params.channel_id,
-      after: req.query.after || null,
     });
+
+    const updatedMessages = await Promise.all(
+      messages.map(async (post) => {
+        if (post.content_type === "photo") {
+          post.message = await generatePreSignedURL(post.message);
+        }
+        if (post.sender_id == req.user.user_id) {
+          post.ownMessage = true;
+        } else {
+          post.ownMessage = false;
+        }
+        delete post.sender_id;
+        return post;
+      })
+    );
 
     return {
       message: "Messages fetched successfully",
-      data: messages,
+      data: updatedMessages,
       status: 200,
     };
   }),
@@ -84,10 +105,18 @@ module.exports = {
     const channels = await chatModel.getUserChannels({
       user_id: req.user.user_id,
     });
+    const updatedUsers = await Promise.all(
+      channels.map(async (post) => {
+        if (post.profile_picture) {
+          post.profile_picture = await generatePreSignedURL(post.profile_picture);
+        }
+        return post;
+      })
+    );
 
     return {
       message: "Channels fetched successfully",
-      data: channels,
+      data: updatedUsers,
       status: 200,
     };
   }),

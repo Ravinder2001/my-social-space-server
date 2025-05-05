@@ -16,6 +16,7 @@ module.exports = {
   sendMessage: Joi.object({
     channel_id: Joi.number().integer().required(),
     message: Joi.string().required(),
+    content_type: Joi.string().valid("TEXT", "IMAGE", "VIDEO").required(),
   }),
   markAsSeen: Joi.object({
     channel_id: Joi.number().integer().required(),

@@ -6,10 +6,11 @@ const morgan = require("morgan");
 const rateLimit = require("express-rate-limit");
 const moment = require("moment");
 
-// const { Server } = require("socket.io");
+const { Server } = require("socket.io");
 
 const mainRouter = require("./routes/routes");
 const config = require("./configuration/config");
+const socketHandlers = require("./sockets/index");
 
 require("./jobs/cronJob");
 require("./configuration/db");
@@ -69,6 +70,16 @@ app.use(morgan(":method :url :status - userId: :user - :ist-date"));
 
 app.use("/", mainRouter);
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
   process.stdout.write(`Server is running on port ${port}\n`);
 });
+
+const io = new Server(server, {
+  cors: {
+    credentials: true,
+    origin: "*",
+  },
+});
+
+// Initialize socket handlers
+socketHandlers(io);

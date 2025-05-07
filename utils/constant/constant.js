@@ -34,7 +34,9 @@ module.exports = {
     production: Config.transportConfigSmtp,
   },
 
-  SOCKET_EVENTS: {},
+  SOCKET_EVENTS: {
+    ERROR: "SOCKET_ERROR",
+  },
   FILE_LIMITS: {
     general: 100 * 1024 * 1024, // 100 MB
     image: { min: 5 * 1024, max: 5 * 1024 * 1024 }, // 5 KB - 5 MB

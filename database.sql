@@ -199,3 +199,9 @@ CREATE TABLE IF NOT EXISTS tbl_stories (
 
 CREATE INDEX idx_stories_user_id ON tbl_stories(user_id);
 CREATE INDEX idx_stories_expiry ON tbl_stories(expires_at);
+
+CREATE TABLE IF NOT EXISTS tbl_user_status (
+  user_id INT PRIMARY KEY REFERENCES tbl_users(user_id) ON DELETE CASCADE,
+  is_online BOOLEAN NOT NULL DEFAULT FALSE,
+  last_seen TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

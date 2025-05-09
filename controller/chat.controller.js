@@ -1,6 +1,7 @@
 const chatModel = require("../model/chat.model");
 const asyncHandler = require("../helpers/asyncHandler");
 const { generatePreSignedURL } = require("../utils/common/imageUploadToS3");
+const { userSockets } = require("../sockets");
 
 module.exports = {
   getFriendsList: asyncHandler(async (req) => {
@@ -57,9 +58,33 @@ module.exports = {
       sender_id: req.user.user_id,
     });
 
+    // Emit the message to all participants in the channel
+    await Promise.all(
+      message.channelMembers.map(async (member) => {
+        const socket = userSockets.get(member.user_id);
+        const userImage = await generatePreSignedURL(req.user.profile_picture);
+        if (socket) {
+          let messageObj = {
+            message_id: message.message_id,
+            message: req.body.message,
+            sent_at: message.sent_at,
+            content_type: req.body.content_type,
+            ownMessage: false,
+            channel_id: req.body.channel_id,
+            name: req.user.full_name,
+            profile_picture: userImage,
+          };
+          socket.emit("Message-Received", messageObj);
+        }
+      })
+    );
+
     return {
       message: "Message sent successfully",
-      data: message,
+      data: {
+        message_id: message.message_id,
+        sent_at: message.sent_at,
+      },
       status: 201,
     };
   }),

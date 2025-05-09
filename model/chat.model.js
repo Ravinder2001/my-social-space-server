@@ -77,8 +77,10 @@ module.exports = {
         VALUES ($1, $2, $3, $4)
         RETURNING message_id, sent_at;
       `;
-      const result = await client.query(query, [values.channel_id, values.sender_id, values.message, values.content_type]);
-      return result.rows[0];
+      const insertResult = await client.query(query, [values.channel_id, values.sender_id, values.message, values.content_type]);
+
+      const channelMembers = await client.query(`SELECT user_id FROM tbl_channel_participants WHERE channel_id=$1 AND user_id != $2`, [values.channel_id, values.sender_id]);
+      return { ...insertResult.rows[0], channelMembers: channelMembers.rows };
     } catch (error) {
       console.error("Error sending message:", error.message);
       throw error;

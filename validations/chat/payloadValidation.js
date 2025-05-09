@@ -22,4 +22,7 @@ module.exports = {
     channel_id: Joi.number().integer().required(),
     seen_at: Joi.date().iso().optional(), // Optional: server can use current timestamp
   }),
+  isTypingSocket: Joi.object({
+    channel_id: Joi.number().integer().required(),
+  }),
 };

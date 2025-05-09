@@ -153,4 +153,19 @@ module.exports = {
       throw error;
     }
   },
+  getChannelParticipants: async ({ channel_id }) => {
+    try {
+      const query = `
+        SELECT u.user_id, u.full_name, u.profile_picture
+        FROM tbl_channel_participants p
+        JOIN tbl_users u ON p.user_id = u.user_id
+        WHERE p.channel_id = $1;
+      `;
+      const result = await client.query(query, [channel_id]);
+      return result.rows;
+    } catch (error) {
+      console.error("Error fetching channel participants:", error.message);
+      throw error;
+    }
+  },
 };

@@ -1,23 +1,44 @@
-const validateSocketBody = require("../helpers/common/validateSocketBody");
-const bodySchema = require("../validations/staffService/staffChat/payloadvalidation");
+const validateSocketBody = require("../helpers/validateSocketBody");
+const bodySchema = require("../validations/chat/payloadValidation");
 
-const chatModel = require("../model/staffModule/staffChat.model");
+const chatModel = require("../model/chat.model");
 // const { userSockets } = require("./index");
 const { SOCKET_EVENTS } = require("../utils/constant/constant");
 
 module.exports = (io, socket, userSockets, userDetails) => {
-  socket.on(SOCKET_EVENTS.STAFF_CHAT_SEND_MESSAGE, (msg) => {
-    validateSocketBody(bodySchema.sendMessageSchema)(socket, async (validatedMsg) => {
+  socket.on(SOCKET_EVENTS.USER_TYPING, (msg) => {
+    validateSocketBody(bodySchema.isTypingSocket)(socket, async (validatedMsg) => {
       try {
-        let response = await chatModel.sendMessage({
-          ...validatedMsg,
-          user_id: userDetails.user_id,
-          organization_id: userDetails.organization_id,
+        let channelMembers = await chatModel.getChannelParticipants({
+          channel_id: validatedMsg.channel_id,
         });
-        response.receiverIds.map((receiverId) => {
-          const recipientSocket = userSockets.get(receiverId.receiver_id);
+        channelMembers.map((member) => {
+          if (member.user_id === userDetails.user_id) return;
+          const recipientSocket = userSockets.get(member.user_id);
           if (recipientSocket) {
-            recipientSocket.emit(SOCKET_EVENTS.STAFF_CHAT_RECEIVE_MESSAGE, response.message);
+            recipientSocket.emit(SOCKET_EVENTS.USER_TYPING, {
+              channel_id: validatedMsg.channel_id,
+            });
+          }
+        });
+      } catch (err) {
+        socket.emit(SOCKET_EVENTS.ERROR, `Validation error: ${err.message}`);
+      }
+    })(msg);
+  });
+  socket.on(SOCKET_EVENTS.USER_NOT_TYPING, (msg) => {
+    validateSocketBody(bodySchema.isTypingSocket)(socket, async (validatedMsg) => {
+      try {
+        let channelMembers = await chatModel.getChannelParticipants({
+          channel_id: validatedMsg.channel_id,
+        });
+        channelMembers.map((member) => {
+          if (member.user_id === userDetails.user_id) return;
+          const recipientSocket = userSockets.get(member.user_id);
+          if (recipientSocket) {
+            recipientSocket.emit(SOCKET_EVENTS.USER_NOT_TYPING, {
+              channel_id: validatedMsg.channel_id,
+            });
           }
         });
       } catch (err) {

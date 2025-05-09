@@ -36,6 +36,9 @@ module.exports = {
 
   SOCKET_EVENTS: {
     ERROR: "SOCKET_ERROR",
+    USER_TYPING: "User-Typing",
+    USER_NOT_TYPING: "User-Not-Typing",
+    MSG_RECEIVED: "Message-Received",
   },
   FILE_LIMITS: {
     general: 100 * 1024 * 1024, // 100 MB

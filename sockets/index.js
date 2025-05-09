@@ -1,7 +1,7 @@
 const { decodeJWT } = require("../utils/common/common");
 const { getUserDetailsByID, updateUserStatus } = require("../model/users.model");
 // const { SOCKET_EVENTS } = require("../utils/constant/constant");
-// const chatSocketHandler = require("./chatSockets");
+const chatSocketHandler = require("./chatSockets");
 
 const userSockets = new Map();
 
@@ -38,7 +38,7 @@ module.exports = (io) => {
     await updateUserStatus(user.user_id, true);
 
     // Optionally enable your chat socket handlers
-    // chatSocketHandler(io, socket, userSockets, user);
+    chatSocketHandler(io, socket, userSockets, user);
 
     socket.on("disconnect", async () => {
       await updateUserStatus(user.user_id, false);

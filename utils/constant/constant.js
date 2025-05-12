@@ -39,6 +39,8 @@ module.exports = {
     USER_TYPING: "User-Typing",
     USER_NOT_TYPING: "User-Not-Typing",
     MSG_RECEIVED: "Message-Received",
+    MSG_EDITED: "Message-Edited",
+    MSG_DELETED: "Message-Deleted",
   },
   FILE_LIMITS: {
     general: 100 * 1024 * 1024, // 100 MB

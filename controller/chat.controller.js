@@ -41,7 +41,6 @@ module.exports = {
       status: 201,
     };
   }),
-
   addParticipantsToChannel: asyncHandler(async (req) => {
     await chatModel.addParticipantsToChannel({
       channel_id: req.body.channel_id,
@@ -96,13 +95,16 @@ module.exports = {
 
     const updatedMessages = await Promise.all(
       messages.map(async (post) => {
-        if (post.content_type === "photo") {
+        if (post.content_type === "photo" && !post.is_deleted) {
           post.message = await generatePreSignedURL(post.message);
         }
         if (post.sender_id == req.user.user_id) {
           post.ownMessage = true;
         } else {
           post.ownMessage = false;
+        }
+        if (post.is_deleted) {
+          post.message = "This message has been deleted";
         }
         delete post.sender_id;
         return post;
@@ -136,6 +138,10 @@ module.exports = {
         if (post.profile_picture) {
           post.profile_picture = await generatePreSignedURL(post.profile_picture);
         }
+        if (post.is_deleted) {
+          post.last_message = "This message has been deleted";
+        }
+        delete post.is_deleted;
         return post;
       })
     );
@@ -143,6 +149,65 @@ module.exports = {
     return {
       message: "Channels fetched successfully",
       data: updatedUsers,
+      status: 200,
+    };
+  }),
+  deleteMessage: asyncHandler(async (req) => {
+    const deletedMessage = await chatModel.deleteMessage({
+      message_id: req.params.message_id,
+      user_id: req.user.user_id,
+    });
+
+    // Emit deletion event to channel participants
+    const channelMembers = await chatModel.getChannelParticipants({
+      channel_id: deletedMessage.channel_id,
+    });
+
+    await Promise.all(
+      channelMembers.map((member) => {
+        const socket = userSockets.get(member.user_id);
+        if (socket && member.user_id !== req.user.user_id) {
+          socket.emit(SOCKET_EVENTS.MSG_DELETED, {
+            message_id: deletedMessage.message_id,
+            channel_id: deletedMessage.channel_id,
+          });
+        }
+      })
+    );
+
+    return {
+      message: "Message deleted successfully",
+      status: 200,
+    };
+  }),
+
+  editMessage: asyncHandler(async (req) => {
+    const editedMessage = await chatModel.editMessage({
+      message_id: req.params.message_id,
+      user_id: req.user.user_id,
+      new_message: req.body.message,
+    });
+
+    // Emit edit event to channel participants
+    const channelMembers = await chatModel.getChannelParticipants({
+      channel_id: editedMessage.channel_id,
+    });
+
+    await Promise.all(
+      channelMembers.map((member) => {
+        const socket = userSockets.get(member.user_id);
+        if (socket && member.user_id !== req.user.user_id) {
+          socket.emit(SOCKET_EVENTS.MSG_EDITED, {
+            message_id: editedMessage.message_id,
+            channel_id: editedMessage.channel_id,
+            message: editedMessage.message,
+          });
+        }
+      })
+    );
+
+    return {
+      message: "Message edited successfully",
       status: 200,
     };
   }),

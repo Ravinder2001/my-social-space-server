@@ -126,6 +126,8 @@ CREATE TABLE IF NOT EXISTS tbl_messages (
   message TEXT NOT NULL,
   content_type VARCHAR(20) NOT NULL DEFAULT 'TEXT' CHECK (content_type IN ('TEXT', 'PHOTO')),
   sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  is_edited BOOLEAN DEFAULT FALSE,
+  is_deleted BOOLEAN DEFAULT FALSE,
 
   FOREIGN KEY (channel_id) REFERENCES tbl_message_channels(channel_id) ON DELETE CASCADE,
   FOREIGN KEY (sender_id) REFERENCES tbl_users(user_id) ON DELETE SET NULL

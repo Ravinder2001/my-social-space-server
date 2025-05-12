@@ -2,7 +2,6 @@ const validateSocketBody = require("../helpers/validateSocketBody");
 const bodySchema = require("../validations/chat/payloadValidation");
 
 const chatModel = require("../model/chat.model");
-// const { userSockets } = require("./index");
 const { SOCKET_EVENTS } = require("../utils/constant/constant");
 
 module.exports = (io, socket, userSockets, userDetails) => {

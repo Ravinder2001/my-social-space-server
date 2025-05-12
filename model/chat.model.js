@@ -89,10 +89,17 @@ module.exports = {
   getMessages: async ({ channel_id }) => {
     try {
       const query = `
-        SELECT m.message_id, m.sender_id, m.message, m.sent_at, m.content_type
+        SELECT 
+        m.message_id, 
+        m.sender_id, 
+        m.message, 
+        m.sent_at, 
+        m.content_type,
+        m.is_edited,
+        m.is_deleted
         FROM tbl_messages m
         WHERE m.channel_id = $1
-        ORDER BY m.sent_at ASC;
+        ORDER BY m.sent_at DESC;
       `;
       const params = [channel_id];
       const result = await client.query(query, params);
@@ -130,6 +137,7 @@ module.exports = {
             ELSE u.profile_picture 
           END AS profile_picture,
           m.message AS last_message,
+          m.is_deleted AS is_deleted,
           m.content_type,
           COALESCE(m.sent_at, c.created_at) AS sent_at
         FROM tbl_message_channels c
@@ -137,7 +145,7 @@ module.exports = {
         LEFT JOIN tbl_channel_participants op ON op.channel_id = c.channel_id AND op.user_id != $1
         LEFT JOIN tbl_users u ON u.user_id = op.user_id
         LEFT JOIN LATERAL (
-            SELECT m1.message, m1.content_type, m1.sent_at
+            SELECT m1.message, m1.content_type, m1.sent_at, m1.is_deleted
             FROM tbl_messages m1
             WHERE m1.channel_id = c.channel_id
             ORDER BY m1.sent_at DESC
@@ -165,6 +173,50 @@ module.exports = {
       return result.rows;
     } catch (error) {
       console.error("Error fetching channel participants:", error.message);
+      throw error;
+    }
+  },
+  deleteMessage: async ({ message_id, user_id }) => {
+    try {
+      const query = `
+        UPDATE tbl_messages
+        SET is_deleted = TRUE
+        WHERE message_id = $1 AND sender_id = $2
+        RETURNING message_id, channel_id, is_deleted;
+      `;
+      const result = await client.query(query, [message_id, user_id]);
+
+      if (result.rows.length === 0) {
+        throw new Error("Message not found or user not authorized to delete");
+      }
+
+      return result.rows[0];
+    } catch (error) {
+      console.error("Error deleting message:", error.message);
+      throw error;
+    }
+  },
+  editMessage: async ({ message_id, user_id, new_message }) => {
+    try {
+      const query = `
+        UPDATE tbl_messages
+        SET message = $1,
+            is_edited = TRUE
+        WHERE message_id = $2 
+          AND sender_id = $3 
+          AND is_deleted = FALSE 
+          AND content_type = 'TEXT'
+        RETURNING message_id, channel_id, message, is_edited;
+      `;
+      const result = await client.query(query, [new_message, message_id, user_id]);
+
+      if (result.rows.length === 0) {
+        throw new Error("Message not found, already deleted, or user not authorized to edit");
+      }
+
+      return result.rows[0];
+    } catch (error) {
+      console.error("Error editing message:", error.message);
       throw error;
     }
   },

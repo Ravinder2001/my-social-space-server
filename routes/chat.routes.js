@@ -16,6 +16,8 @@ router.get("/channels", chatController.getUserChannels);
 // Messages
 router.post("/messages", validateBody(schemas.sendMessage), chatController.sendMessage);
 router.get("/messages/:channel_id", chatController.getMessages);
+router.delete("/messages/:message_id", chatController.deleteMessage);
+router.put("/messages/:message_id", validateBody(schemas.editMessage), chatController.editMessage);
 
 // Seen
 router.post("/seen", validateBody(schemas.markAsSeen), chatController.markAsSeen);

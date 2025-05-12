@@ -10,16 +10,13 @@ module.exports = {
     user_ids: Joi.array().items(Joi.number().integer()).min(1).required(),
   }),
   addParticipantsToChannel: Joi.object({
-    channel_id: Joi.number().integer().required(),
     user_ids: Joi.array().items(Joi.number().integer()).min(1).required(),
   }),
   sendMessage: Joi.object({
-    channel_id: Joi.number().integer().required(),
     message: Joi.string().required(),
     content_type: Joi.string().valid("TEXT", "IMAGE", "VIDEO").required(),
   }),
   markAsSeen: Joi.object({
-    channel_id: Joi.number().integer().required(),
     seen_at: Joi.date().iso().optional(), // Optional: server can use current timestamp
   }),
   isTypingSocket: Joi.object({

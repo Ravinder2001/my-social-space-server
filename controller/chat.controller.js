@@ -43,7 +43,7 @@ module.exports = {
   }),
   addParticipantsToChannel: asyncHandler(async (req) => {
     await chatModel.addParticipantsToChannel({
-      channel_id: req.body.channel_id,
+      channel_id: req.params.channel_id,
       user_ids: req.body.user_ids,
     });
 
@@ -56,6 +56,7 @@ module.exports = {
     const message = await chatModel.sendMessage({
       ...req.body,
       sender_id: req.user.user_id,
+      channel_id: req.params.channel_id,
     });
 
     const userImage = await generatePreSignedURL(req.user.profile_picture);
@@ -119,7 +120,7 @@ module.exports = {
   }),
   markAsSeen: asyncHandler(async (req) => {
     await chatModel.markAsSeen({
-      channel_id: req.body.channel_id,
+      channel_id: req.params.channel_id,
       user_id: req.user.user_id,
       seen_at: new Date(), // Or req.body.seen_at if you're sending client timestamp
     });

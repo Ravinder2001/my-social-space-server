@@ -4,6 +4,7 @@ const { getUserDetailsByID, updateUserStatus } = require("../model/users.model")
 const chatSocketHandler = require("./chatSockets");
 
 const userSockets = new Map();
+const activeChatsMap = new Map();
 
 module.exports = (io) => {
   // Middleware for authentication
@@ -38,7 +39,7 @@ module.exports = (io) => {
     await updateUserStatus(user.user_id, true);
 
     // Optionally enable your chat socket handlers
-    chatSocketHandler(io, socket, userSockets, user);
+    chatSocketHandler(io, socket, userSockets, user, activeChatsMap);
 
     socket.on("disconnect", async () => {
       await updateUserStatus(user.user_id, false);

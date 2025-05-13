@@ -140,9 +140,13 @@ module.exports = {
           m.message AS last_message,
           m.is_deleted AS is_deleted,
           m.content_type,
-          COALESCE(m.sent_at, c.created_at) AS sent_at
+          COALESCE(m.sent_at, c.created_at) AS sent_at,
+          COALESCE(unread.unread_count, 0) AS unread_count
+            
         FROM tbl_message_channels c
+            
         JOIN tbl_channel_participants p ON c.channel_id = p.channel_id
+            
         LEFT JOIN LATERAL (
           SELECT op1.*
           FROM tbl_channel_participants op1
@@ -150,7 +154,9 @@ module.exports = {
           ORDER BY op1.user_id
           LIMIT 1
         ) op ON true
+            
         LEFT JOIN tbl_users u ON u.user_id = op.user_id
+            
         LEFT JOIN LATERAL (
           SELECT m1.message, m1.content_type, m1.sent_at, m1.is_deleted
           FROM tbl_messages m1
@@ -158,7 +164,19 @@ module.exports = {
           ORDER BY m1.sent_at DESC
           LIMIT 1
         ) m ON true
+            
+        -- Unread count logic
+        LEFT JOIN LATERAL (
+          SELECT COUNT(*) AS unread_count
+          FROM tbl_messages m2
+          LEFT JOIN tbl_channel_seen_status ss ON ss.channel_id = m2.channel_id AND ss.user_id = $1
+          WHERE m2.channel_id = c.channel_id
+            AND m2.sender_id != $1
+            AND (ss.seen_at IS NULL OR m2.sent_at > ss.seen_at)
+        ) unread ON true
+            
         WHERE p.user_id = $1
+            
         ORDER BY COALESCE(m.sent_at, c.created_at) DESC;
       `;
       const result = await client.query(query, [user_id]);

@@ -65,6 +65,7 @@ module.exports = (io) => {
 };
 
 module.exports.userSockets = userSockets;
+module.exports.activeChatsMap = activeChatsMap;
 
 function logUserSockets() {
   const simpleMap = new Map();

@@ -128,6 +128,7 @@ module.exports = {
       const query = `
         SELECT 
           c.channel_id,
+          c.is_group,
           CASE 
             WHEN c.is_group THEN c.name 
             ELSE u.full_name 
@@ -184,15 +185,6 @@ module.exports = {
   },
   getChannelDetails: async ({ user_id, channel_id }) => {
     try {
-      // First, get the channel type (group or not)
-      const channelRes = await client.query(`SELECT is_group FROM tbl_message_channels WHERE channel_id = $1`, [channel_id]);
-
-      if (channelRes.rows.length === 0) {
-        throw new Error("Channel not found");
-      }
-
-      const isGroup = channelRes.rows[0].is_group;
-
       // Now get members based on group status
       const membersQuery = `
       SELECT 
@@ -211,7 +203,6 @@ module.exports = {
       const result = await client.query(membersQuery, [channel_id, user_id]);
 
       return {
-        is_group: isGroup,
         members: result.rows,
       };
     } catch (error) {

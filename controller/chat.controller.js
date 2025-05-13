@@ -1,7 +1,7 @@
 const chatModel = require("../model/chat.model");
 const asyncHandler = require("../helpers/asyncHandler");
 const { generatePreSignedURL } = require("../utils/common/imageUploadToS3");
-const { userSockets } = require("../sockets");
+const { userSockets, activeChatsMap } = require("../sockets");
 const { SOCKET_EVENTS } = require("../utils/constant/constant");
 
 module.exports = {
@@ -62,6 +62,7 @@ module.exports = {
     const userImage = await generatePreSignedURL(req.user.profile_picture);
 
     const roomId = `channel_${req.params.channel_id}`;
+    const channelId = req.params.channel_id;
 
     const messageObj = {
       message_id: message.message_id,
@@ -69,16 +70,34 @@ module.exports = {
       sent_at: message.sent_at,
       content_type: req.body.content_type,
       ownMessage: false,
-      channel_id: req.params.channel_id,
+      channel_id: channelId,
       name: req.user.full_name,
       profile_picture: userImage,
+      sender_id: req.user.user_id,
     };
 
-    // Emit the message to all sockets in the room except the sender
-    // If you want to also include the sender, use io.to(roomId).emit(...)
     const senderSocket = userSockets.get(req.user.user_id);
     if (senderSocket) {
       senderSocket.to(roomId).emit(SOCKET_EVENTS.MSG_RECEIVED, messageObj);
+    }
+
+    // ✅ Step 2: Notify users who are part of the channel but not active in chat
+    const channelUserIds = message.channelMembers.map((member) => member.user_id);
+
+    for (const userId of channelUserIds) {
+      if (userId === req.user.user_id) continue; // Skip sender
+
+      const socket = userSockets.get(userId);
+      if (!socket) continue; // User not connected
+      const activeChannels = activeChatsMap.get(userId);
+      const isInRoom = activeChannels?.has(Number(channelId));
+
+      if (!isInRoom) {
+        socket.emit(SOCKET_EVENTS.MSG_NOTIFICATION, {
+          ...messageObj,
+          preview: true,
+        });
+      }
     }
 
     return {
@@ -90,6 +109,7 @@ module.exports = {
       status: 201,
     };
   }),
+
   getMessages: asyncHandler(async (req) => {
     const messages = await chatModel.getMessages({
       channel_id: req.params.channel_id,
@@ -102,13 +122,13 @@ module.exports = {
         }
         if (post.sender_id == req.user.user_id) {
           post.ownMessage = true;
+          delete post.sender_id;
         } else {
           post.ownMessage = false;
         }
         if (post.is_deleted) {
           post.message = "This message has been deleted";
         }
-        delete post.sender_id;
         return post;
       })
     );

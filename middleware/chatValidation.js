@@ -8,7 +8,7 @@ module.exports = {
     const { message_id } = req.params;
 
     try {
-      const status = await dbValidation(message_id, "tbl_messages", "message_id", `user_id == ${req.user.user_id}`);
+      const status = await dbValidation(message_id, "tbl_messages", "message_id", `sender_id = ${req.user.user_id}`);
       if (status === HttpStatus.BAD_REQUEST) {
         return commonController.errorResponse(res, "Not a valid Message id", HttpStatus.BAD_REQUEST);
       } else if (status === HttpStatus.NOT_FOUND) {

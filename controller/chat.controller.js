@@ -71,7 +71,7 @@ module.exports = {
             sent_at: message.sent_at,
             content_type: req.body.content_type,
             ownMessage: false,
-            channel_id: req.body.channel_id,
+            channel_id: req.params.channel_id,
             name: req.user.full_name,
             profile_picture: userImage,
           };

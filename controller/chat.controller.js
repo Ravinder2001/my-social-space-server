@@ -60,25 +60,26 @@ module.exports = {
     });
 
     const userImage = await generatePreSignedURL(req.user.profile_picture);
-    // Emit the message to all participants in the channel
-    await Promise.all(
-      message.channelMembers.map((member) => {
-        const socket = userSockets.get(member.user_id);
-        if (socket) {
-          let messageObj = {
-            message_id: message.message_id,
-            message: req.body.message,
-            sent_at: message.sent_at,
-            content_type: req.body.content_type,
-            ownMessage: false,
-            channel_id: req.params.channel_id,
-            name: req.user.full_name,
-            profile_picture: userImage,
-          };
-          socket.emit(SOCKET_EVENTS.MSG_RECEIVED, messageObj);
-        }
-      })
-    );
+
+    const roomId = `channel_${req.params.channel_id}`;
+
+    const messageObj = {
+      message_id: message.message_id,
+      message: req.body.message,
+      sent_at: message.sent_at,
+      content_type: req.body.content_type,
+      ownMessage: false,
+      channel_id: req.params.channel_id,
+      name: req.user.full_name,
+      profile_picture: userImage,
+    };
+
+    // Emit the message to all sockets in the room except the sender
+    // If you want to also include the sender, use io.to(roomId).emit(...)
+    const senderSocket = userSockets.get(req.user.user_id);
+    if (senderSocket) {
+      senderSocket.to(roomId).emit(SOCKET_EVENTS.MSG_RECEIVED, messageObj);
+    }
 
     return {
       message: "Message sent successfully",
@@ -150,6 +151,29 @@ module.exports = {
     return {
       message: "Channels fetched successfully",
       data: updatedUsers,
+      status: 200,
+    };
+  }),
+  getChannelDetails: asyncHandler(async (req) => {
+    const channels = await chatModel.getChannelDetails({
+      user_id: req.user.user_id,
+      channel_id: req.params.channel_id,
+    });
+    const updatedDetails = await Promise.all(
+      channels.members.map(async (post) => {
+        if (post.profile_picture) {
+          post.profile_picture = await generatePreSignedURL(post.profile_picture);
+        }
+
+        return post;
+      })
+    );
+
+    channels.members = updatedDetails;
+
+    return {
+      message: "Channels fetched successfully",
+      data: channels,
       status: 200,
     };
   }),

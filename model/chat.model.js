@@ -176,6 +176,43 @@ module.exports = {
       throw error;
     }
   },
+  getChannelDetails: async ({ user_id, channel_id }) => {
+    try {
+      // First, get the channel type (group or not)
+      const channelRes = await client.query(`SELECT is_group FROM tbl_message_channels WHERE channel_id = $1`, [channel_id]);
+
+      if (channelRes.rows.length === 0) {
+        throw new Error("Channel not found");
+      }
+
+      const isGroup = channelRes.rows[0].is_group;
+
+      // Now get members based on group status
+      const membersQuery = `
+      SELECT 
+        p.user_id,
+        u.full_name,
+        u.profile_picture,
+        us.is_online, 
+        us.last_seen
+      FROM tbl_channel_participants p
+      JOIN tbl_users u ON u.user_id = p.user_id
+      LEFT JOIN tbl_user_status us ON us.user_id = p.user_id
+      WHERE p.channel_id = $1
+      AND p.user_id != $2
+    `;
+
+      const result = await client.query(membersQuery, [channel_id, user_id]);
+
+      return {
+        is_group: isGroup,
+        members: result.rows,
+      };
+    } catch (error) {
+      console.error("Error fetching channel details:", error.message);
+      throw error;
+    }
+  },
   deleteMessage: async ({ message_id, user_id }) => {
     try {
       const query = `
@@ -217,6 +254,21 @@ module.exports = {
       return result.rows[0];
     } catch (error) {
       console.error("Error editing message:", error.message);
+      throw error;
+    }
+  },
+  getChannelsOfUser: async (user_id) => {
+    try {
+      const query = `
+        SELECT channel_id
+        FROM tbl_channel_participants
+        WHERE user_id = $1;
+      `;
+      const result = await client.query(query, [user_id]);
+
+      return result.rows.map((row) => row.channel_id);
+    } catch (error) {
+      console.error("Error getting channels of user:", error.message);
       throw error;
     }
   },

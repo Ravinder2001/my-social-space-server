@@ -12,6 +12,7 @@ router.get("/searchFriends", chatController.getFriendsList);
 router.post("/channels", validateBody(schemas.createChannel), chatController.createChannelWithUsers);
 router.post("/channels/participants/:channel_id", validateBody(schemas.addParticipantsToChannel), validateChannelOwnership, chatController.addParticipantsToChannel);
 router.get("/channels", chatController.getUserChannels);
+router.get("/channelDetails/:channel_id", validateChannelId, chatController.getChannelDetails);
 
 // Messages
 router.post("/messages/:channel_id", validateBody(schemas.sendMessage), validateChannelId, chatController.sendMessage);

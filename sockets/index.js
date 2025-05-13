@@ -1,7 +1,9 @@
 const { decodeJWT } = require("../utils/common/common");
 const { getUserDetailsByID, updateUserStatus } = require("../model/users.model");
+const { getChannelsOfUser } = require("../model/chat.model");
 // const { SOCKET_EVENTS } = require("../utils/constant/constant");
 const chatSocketHandler = require("./chatSockets");
+const constant = require("../utils/constant/constant");
 
 const userSockets = new Map();
 const activeChatsMap = new Map();
@@ -37,12 +39,14 @@ module.exports = (io) => {
     logUserSockets();
 
     await updateUserStatus(user.user_id, true);
+    notifyPresenceChange(io, user.user_id, true);
 
     // Optionally enable your chat socket handlers
     chatSocketHandler(io, socket, userSockets, user, activeChatsMap);
 
     socket.on("disconnect", async () => {
       await updateUserStatus(user.user_id, false);
+      notifyPresenceChange(io, user.user_id, false);
       console.log(`User Disconnected: ${user.user_id}`);
 
       // Remove socket from map
@@ -67,4 +71,19 @@ function logUserSockets() {
     simpleMap.set(key, value.id); // only log socket.id
   }
   console.log("Current userSockets map:", JSON.stringify([...simpleMap]));
+}
+
+async function notifyPresenceChange(io, user_id, isOnline) {
+  const userChannels = await getChannelsOfUser(user_id); // List of channel IDs
+
+  for (const channel_id of userChannels) {
+    const room = `channel_${channel_id}`;
+
+    // Notify only those in the room (and skip the user themselves)
+    io.to(room).emit(constant.SOCKET_EVENTS.USER_PRESENCE_CHANGE, {
+      user_id,
+      isOnline,
+      channel_id,
+    });
+  }
 }

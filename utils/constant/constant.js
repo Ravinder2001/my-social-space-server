@@ -43,6 +43,7 @@ module.exports = {
     MSG_DELETED: "Message-Deleted",
     CHAT_OPENED: "Chat-Opened",
     CHAT_CLOSED: "Chat-Closed",
+    USER_PRESENCE_CHANGE: "USER_PRESENCE_CHANGE",
   },
   FILE_LIMITS: {
     general: 100 * 1024 * 1024, // 100 MB

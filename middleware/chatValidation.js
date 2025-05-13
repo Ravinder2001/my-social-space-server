@@ -56,4 +56,22 @@ module.exports = {
       return commonController.handleAsyncError(error, res);
     }
   },
+  validateIsChannelExists: async (req, res, next) => {
+    const anotherUserId = req.body.user_ids[0];
+    const currentUserId = req.user.user_id;
+
+    try {
+      const isChannelExists = await ChatModel.isChannelExists({
+        user_id_1: currentUserId,
+        user_id_2: anotherUserId,
+      });
+
+      if (isChannelExists) {
+        return commonController.errorResponse(res, "This User is already in the channel", HttpStatus.BAD_REQUEST);
+      }
+      next();
+    } catch (error) {
+      return commonController.handleAsyncError(error, res);
+    }
+  },
 };

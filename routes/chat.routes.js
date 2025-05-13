@@ -2,14 +2,14 @@ const express = require("express");
 const validateBody = require("../helpers/validateBodyHelper");
 const schemas = require("../validations/chat/payloadValidation");
 const chatController = require("../controller/chat.controller");
-const { validateMessageId, validateChannelId, validateChannelOwnership } = require("../middleware/chatValidation");
+const { validateMessageId, validateChannelId, validateChannelOwnership, validateIsChannelExists } = require("../middleware/chatValidation");
 const router = express.Router();
 
 // Friends
 router.get("/searchFriends", chatController.getFriendsList);
 
 // Channels
-router.post("/channels", validateBody(schemas.createChannel), chatController.createChannelWithUsers);
+router.post("/channels", validateBody(schemas.createChannel), validateIsChannelExists, chatController.createChannelWithUsers);
 router.post("/channels/participants/:channel_id", validateBody(schemas.addParticipantsToChannel), validateChannelOwnership, chatController.addParticipantsToChannel);
 router.get("/channels", chatController.getUserChannels);
 router.get("/channelDetails/:channel_id", validateChannelId, chatController.getChannelDetails);

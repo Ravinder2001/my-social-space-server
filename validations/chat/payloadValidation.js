@@ -7,7 +7,11 @@ module.exports = {
       is: true,
       then: Joi.string().required(),
     }),
-    user_ids: Joi.array().items(Joi.number().integer()).min(1).required(),
+    user_ids: Joi.alternatives().conditional("is_group", {
+      is: true,
+      then: Joi.array().items(Joi.number().integer()).min(2).required(),
+      otherwise: Joi.array().items(Joi.number().integer()).min(1).required(),
+    }),
   }),
   addParticipantsToChannel: Joi.object({
     user_ids: Joi.array().items(Joi.number().integer()).min(1).required(),

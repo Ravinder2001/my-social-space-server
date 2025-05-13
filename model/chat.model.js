@@ -269,4 +269,28 @@ module.exports = {
       throw error;
     }
   },
+  isChannelExists: async ({ user_id_1, user_id_2 }) => {
+    try {
+      const query = `
+        SELECT EXISTS (
+          SELECT 1
+          FROM tbl_channel_participants cp1
+          JOIN tbl_channel_participants cp2
+            ON cp1.channel_id = cp2.channel_id
+          JOIN tbl_message_channels mc
+            ON mc.channel_id = cp1.channel_id
+          WHERE cp1.user_id = $1
+            AND cp2.user_id = $2
+            AND mc.is_group = FALSE
+        ) AS is_private_channel_exists;
+
+      `;
+      const result = await client.query(query, [user_id_1, user_id_2]);
+
+      return result.rows[0].is_private_channel_exists;
+    } catch (error) {
+      console.error("Error getting channels of user:", error.message);
+      throw error;
+    }
+  },
 };

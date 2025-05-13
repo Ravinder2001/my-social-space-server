@@ -4,6 +4,7 @@ const { getChannelsOfUser } = require("../model/chat.model");
 // const { SOCKET_EVENTS } = require("../utils/constant/constant");
 const chatSocketHandler = require("./chatSockets");
 const constant = require("../utils/constant/constant");
+const generateTimestamp = require("../utils/common/generateTimestamp");
 
 const userSockets = new Map();
 const activeChatsMap = new Map();
@@ -84,6 +85,7 @@ async function notifyPresenceChange(io, user_id, isOnline) {
       user_id,
       isOnline,
       channel_id,
+      last_seen: generateTimestamp(),
     });
   }
 }

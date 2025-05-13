@@ -142,14 +142,20 @@ module.exports = {
           COALESCE(m.sent_at, c.created_at) AS sent_at
         FROM tbl_message_channels c
         JOIN tbl_channel_participants p ON c.channel_id = p.channel_id
-        LEFT JOIN tbl_channel_participants op ON op.channel_id = c.channel_id AND op.user_id != $1
+        LEFT JOIN LATERAL (
+          SELECT op1.*
+          FROM tbl_channel_participants op1
+          WHERE op1.channel_id = c.channel_id AND op1.user_id != $1
+          ORDER BY op1.user_id
+          LIMIT 1
+        ) op ON true
         LEFT JOIN tbl_users u ON u.user_id = op.user_id
         LEFT JOIN LATERAL (
-            SELECT m1.message, m1.content_type, m1.sent_at, m1.is_deleted
-            FROM tbl_messages m1
-            WHERE m1.channel_id = c.channel_id
-            ORDER BY m1.sent_at DESC
-            LIMIT 1
+          SELECT m1.message, m1.content_type, m1.sent_at, m1.is_deleted
+          FROM tbl_messages m1
+          WHERE m1.channel_id = c.channel_id
+          ORDER BY m1.sent_at DESC
+          LIMIT 1
         ) m ON true
         WHERE p.user_id = $1
         ORDER BY COALESCE(m.sent_at, c.created_at) DESC;

@@ -103,6 +103,7 @@ CREATE TABLE IF NOT EXISTS tbl_message_channels (
   channel_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   is_group BOOLEAN DEFAULT FALSE,
   name VARCHAR(255), -- Only for group chats
+  group_logo TEXT DEFAULT NULL,
   created_by INT NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 

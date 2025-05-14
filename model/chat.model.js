@@ -1,5 +1,6 @@
 const client = require("../configuration/db");
 const generateTimestamp = require("../utils/common/generateTimestamp");
+const { removeFilesFromTrash } = require("./upload.model");
 
 module.exports = {
   getFriendsList: async ({ user_id, searchQuery }) => {
@@ -158,7 +159,7 @@ module.exports = {
             ELSE u.full_name 
           END AS channel_name,
           CASE 
-            WHEN c.is_group THEN NULL 
+            WHEN c.is_group THEN c.group_logo  
             ELSE u.profile_picture 
           END AS profile_picture,
           m.message AS last_message,
@@ -343,6 +344,31 @@ module.exports = {
       return result.rows[0].is_private_channel_exists;
     } catch (error) {
       console.error("Error getting channels of user:", error.message);
+      throw error;
+    }
+  },
+  editChannelDetails: async ({ user_id, channel_id, name, group_logo }) => {
+    try {
+      const query = `
+        UPDATE tbl_message_channels
+        SET name = $1,
+            group_logo = $2
+        WHERE channel_id = $3 
+          AND created_by = $4 AND is_group = TRUE
+      `;
+      const result = await client.query(query, [name, group_logo, channel_id, user_id]);
+
+      if (result.rowCount === 0) {
+        throw new Error("Channel not found or user not authorized to edit");
+      }
+
+      if (group_logo) {
+        await removeFilesFromTrash([group_logo]);
+      }
+
+      return;
+    } catch (error) {
+      console.error("Error editing channel details:", error.message);
       throw error;
     }
   },

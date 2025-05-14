@@ -13,6 +13,7 @@ router.post("/channels", validateBody(schemas.createChannel), validateIsChannelE
 router.post("/channels/participants/:channel_id", validateBody(schemas.addParticipantsToChannel), validateChannelOwnership, chatController.addParticipantsToChannel);
 router.get("/channels", chatController.getUserChannels);
 router.get("/channelDetails/:channel_id", validateChannelId, chatController.getChannelDetails);
+router.put("/channelDetails/:channel_id", validateBody(schemas.editChannelDetails), validateChannelOwnership, chatController.editChannelDetails);
 
 // Messages
 router.post("/messages/:channel_id", validateBody(schemas.sendMessage), validateChannelId, chatController.sendMessage);

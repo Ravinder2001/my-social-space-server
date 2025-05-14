@@ -208,6 +208,19 @@ module.exports = {
       status: 200,
     };
   }),
+  editChannelDetails: asyncHandler(async (req) => {
+    await chatModel.editChannelDetails({
+      user_id: req.user.user_id,
+      channel_id: req.params.channel_id,
+      name: req.body.name,
+      group_logo: req.body.group_logo,
+    });
+
+    return {
+      message: "Channels details edited successfully",
+      status: 200,
+    };
+  }),
   deleteMessage: asyncHandler(async (req) => {
     const deletedMessage = await chatModel.deleteMessage({
       message_id: req.params.message_id,

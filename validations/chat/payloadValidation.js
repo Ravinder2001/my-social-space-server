@@ -29,4 +29,8 @@ module.exports = {
       "any.required": "New message content is required",
     }),
   }),
+  editChannelDetails: Joi.object({
+    name: Joi.string().required(),
+    group_logo: Joi.string().allow(null, "").required(),
+  }),
 };

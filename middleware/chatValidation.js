@@ -45,7 +45,7 @@ module.exports = {
     const { channel_id } = req.params;
 
     try {
-      const status = await dbValidation(channel_id, "tbl_message_channels", "channel_id", `created_by == ${req.user.user_id}`);
+      const status = await dbValidation(channel_id, "tbl_message_channels", "channel_id", `created_by = ${req.user.user_id}`);
       if (status === HttpStatus.BAD_REQUEST) {
         return commonController.errorResponse(res, "Not a valid Channel id", HttpStatus.BAD_REQUEST);
       } else if (status === HttpStatus.NOT_FOUND) {

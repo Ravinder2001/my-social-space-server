@@ -45,6 +45,7 @@ module.exports = {
     CHAT_CLOSED: "Chat-Closed",
     USER_PRESENCE_CHANGE: "User-Presence-Change",
     MSG_NOTIFICATION: "Message-Notification",
+    MSG_SEEN_NOTIFICATION: "Message-Seen",
   },
   FILE_LIMITS: {
     general: 100 * 1024 * 1024, // 100 MB

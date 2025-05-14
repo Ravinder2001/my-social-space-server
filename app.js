@@ -20,7 +20,7 @@ const port = config.PORT;
 const app = express();
 
 const corsOptions = {
-  origin: "*", // Allow requests from this org
+  origin: ["http://localhost:3000"], // Allow requests from this org
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE"], // Allow only GET and POST requests
   optionsSuccessStatus: 200, // Some legacy browsers (IE11, various SmartTVs) choke on 204
 };

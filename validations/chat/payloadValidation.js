@@ -20,9 +20,6 @@ module.exports = {
     message: Joi.string().required(),
     content_type: Joi.string().valid("TEXT", "IMAGE", "VIDEO").required(),
   }),
-  markAsSeen: Joi.object({
-    seen_at: Joi.date().iso().optional(), // Optional: server can use current timestamp
-  }),
   isTypingSocket: Joi.object({
     channel_id: Joi.number().integer().required(),
   }),

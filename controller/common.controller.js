@@ -77,7 +77,7 @@ const generateUserToken = (data) => {
     },
     config.jwt.secretKey,
     {
-      expiresIn: "100d",
+      expiresIn: "1d",
     }
   );
 };

@@ -21,6 +21,6 @@ router.delete("/messages/:message_id", validateMessageId, chatController.deleteM
 router.put("/messages/:message_id", validateBody(schemas.editMessage), validateMessageId, chatController.editMessage);
 
 // Seen
-router.post("/seen/:channel_id", validateBody(schemas.markAsSeen), validateChannelId, chatController.markAsSeen);
+router.get("/seen/:channel_id", validateChannelId, chatController.markAsSeen);
 
 module.exports = router;

@@ -140,11 +140,22 @@ module.exports = {
     };
   }),
   markAsSeen: asyncHandler(async (req) => {
-    await chatModel.markAsSeen({
+    const response = await chatModel.markAsSeen({
       channel_id: req.params.channel_id,
       user_id: req.user.user_id,
-      seen_at: new Date(), // Or req.body.seen_at if you're sending client timestamp
     });
+
+    const roomId = `channel_${req.params.channel_id}`;
+    const channelId = Number(req.params.channel_id);
+
+    const senderSocket = userSockets.get(req.user.user_id);
+    if (senderSocket) {
+      senderSocket.to(roomId).emit(SOCKET_EVENTS.MSG_SEEN_NOTIFICATION, {
+        channel_id: channelId,
+        user_id: req.user.user_id,
+        msg_id: response,
+      });
+    }
 
     return {
       message: "Message marked as seen",

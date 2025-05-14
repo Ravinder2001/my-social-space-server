@@ -1,4 +1,5 @@
 const client = require("../configuration/db");
+const generateTimestamp = require("../utils/common/generateTimestamp");
 
 module.exports = {
   getFriendsList: async ({ user_id, searchQuery }) => {
@@ -109,16 +110,39 @@ module.exports = {
       throw error;
     }
   },
-  markAsSeen: async ({ channel_id, user_id, seen_at }) => {
+  markAsSeen: async ({ channel_id, user_id }) => {
     try {
-      const query = `
-        INSERT INTO tbl_channel_seen_status (channel_id, user_id, seen_at)
-        VALUES ($1, $2, $3)
-        ON CONFLICT (channel_id, user_id)
-        DO UPDATE SET seen_at = GREATEST(tbl_channel_seen_status.seen_at, EXCLUDED.seen_at);
-      `;
-      await client.query(query, [channel_id, user_id, seen_at]);
+      await client.query("BEGIN");
+
+      const now = generateTimestamp();
+
+      // Step 1: Update the seen timestamp for the current user
+      const updateSeenQuery = `
+      INSERT INTO tbl_channel_seen_status (channel_id, user_id, seen_at)
+      VALUES ($1, $2, $3)
+      ON CONFLICT (channel_id, user_id)
+      DO UPDATE SET seen_at = GREATEST(tbl_channel_seen_status.seen_at, EXCLUDED.seen_at);
+    `;
+      await client.query(updateSeenQuery, [channel_id, user_id, now]);
+
+      // Step 2: Fetch messages seen by this user, grouped by sender
+      const getSeenStatusQuery = `
+      SELECT 
+        MAX(m.message_id) AS last_seen_message_id
+      FROM tbl_messages m
+      JOIN tbl_channel_seen_status css ON m.channel_id = css.channel_id
+      WHERE m.channel_id = $1
+        AND css.user_id = $2
+        AND m.sent_at <= css.seen_at
+    `;
+
+      const result = await client.query(getSeenStatusQuery, [channel_id, user_id]);
+
+      await client.query("COMMIT");
+
+      return result.rows[0].last_seen_message_id; // array of { user_id, last_seen_message_id }
     } catch (error) {
+      await client.query("ROLLBACK");
       console.error("Error updating seen status:", error.message);
       throw error;
     }
@@ -203,21 +227,32 @@ module.exports = {
   },
   getChannelDetails: async ({ user_id, channel_id }) => {
     try {
-      // Now get members based on group status
       const membersQuery = `
       SELECT 
         p.user_id,
         u.full_name,
         u.profile_picture,
         us.is_online, 
-        us.last_seen
+        us.last_seen,
+        css.seen_at,
+        (
+          SELECT m.message_id
+          FROM tbl_messages m
+          WHERE m.channel_id = p.channel_id
+            AND m.sender_id = $2
+            AND m.sent_at <= css.seen_at
+            AND m.is_deleted = FALSE
+          ORDER BY m.sent_at DESC
+          LIMIT 1
+        ) AS last_seen_message_id
       FROM tbl_channel_participants p
       JOIN tbl_users u ON u.user_id = p.user_id
       LEFT JOIN tbl_user_status us ON us.user_id = p.user_id
+      LEFT JOIN tbl_channel_seen_status css 
+        ON css.user_id = p.user_id AND css.channel_id = p.channel_id
       WHERE p.channel_id = $1
-      AND p.user_id != $2
-    `;
-
+        AND p.user_id != $2;
+`;
       const result = await client.query(membersQuery, [channel_id, user_id]);
 
       return {

@@ -236,6 +236,10 @@ module.exports = {
         us.is_online, 
         us.last_seen,
         css.seen_at,
+        CASE 
+          WHEN mc.created_by = p.user_id THEN true 
+          ELSE false 
+        END AS is_admin,
         (
           SELECT m.message_id
           FROM tbl_messages m
@@ -251,8 +255,12 @@ module.exports = {
       LEFT JOIN tbl_user_status us ON us.user_id = p.user_id
       LEFT JOIN tbl_channel_seen_status css 
         ON css.user_id = p.user_id AND css.channel_id = p.channel_id
+      JOIN tbl_message_channels mc ON mc.channel_id = p.channel_id
       WHERE p.channel_id = $1
-        AND p.user_id != $2;
+        AND (
+          mc.is_group = TRUE
+          OR (mc.is_group != TRUE AND p.user_id != $2) -- exclude self for personal chat
+        );
 `;
       const result = await client.query(membersQuery, [channel_id, user_id]);
 
